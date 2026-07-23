@@ -12,7 +12,10 @@ Give teachers and tutors a fast, accurate picture of the students they're about 
 - **Tenancy:** Single school/pilot. Data model includes a `school_id` on every table so multi-school isolation can be added later without restructuring, but no multi-tenant admin/isolation logic is built now.
 - **Delivery setting:** Each student has their own device and login (not shared classroom devices).
 - **Compliance (COPPA/FERPA-style):** Explicitly deferred for this pilot. Data minimization and role-based access are still followed as good defaults, but formal consent flows, retention policies, and district data-ownership agreements are out of scope until the platform moves toward real deployment.
-- **Stack:** Python backend (FastAPI), Postgres, a scheduler (APScheduler or Celery+Redis) for recurring/triggered pipeline runs, LLM calls for generation/grading/synthesis, a React web frontend. Third-party APIs for text-to-speech/video rendering (early-tier delivery) and speech-to-text (read-aloud fluency).
+- **Stack:** Python backend (FastAPI), Postgres, a scheduler (APScheduler or Celery+Redis) for recurring/triggered pipeline runs, a React web frontend.
+  - **LLM (generation/grading/synthesis):** Google Gemini API (free tier for dev/pilot). Fallback for heavy local testing: Ollama running an open-source model, no key required.
+  - **Text-to-speech & speech-to-text:** Azure AI Speech free tier — one account covers both narration audio (early-tier delivery) and read-aloud transcription/fluency scoring. Fallback for STT: local Whisper, no key required, useful once free-tier audio-minute quotas get tight during testing.
+  - **Video/visual rendering (early-tier delivery):** Remotion — a self-hosted, open-source React-based rendering framework, not a generative video API. The agent fills a template (question text, images, TTS audio timing) and Remotion renders it to MP4 deterministically. No per-call cost, no API key. Static illustrations, if needed, from Pollinations.ai (free, keyless).
 
 ## 3. Skill dimensions
 
@@ -37,8 +40,8 @@ Traits that don't map cleanly to a quiz (EQ, social awareness, collaboration) ar
 Both pipelines below are the same underlying engine, configured two different ways — not two separate systems. Shared components:
 
 - **Item-generation agent** — takes grade level (and, for topic-readiness, a topic) as input; calibrates question difficulty to that grade's expected rigor every time.
-- **Media-rendering stage** (early tier only) — converts generated items into narrated audio + simple visuals/animation via TTS + lightweight video generation, so non-readers can understand what's being asked without reading text.
-- **Read-aloud item type** (both tiers) — student reads a passage aloud (mic capture) → speech-to-text transcription → fluency scoring (pace/WPM, accuracy vs. source text, pronunciation) → narrated (early) or text (late) follow-up comprehension questions on the same passage, scored normally.
+- **Media-rendering stage** (early tier only) — converts generated items into narrated audio (Azure TTS) + a templated animated video (Remotion renders a React template filled in with the item's text/images and the TTS audio timing — deterministic rendering, not generative video), so non-readers can understand what's being asked without reading text.
+- **Read-aloud item type** (both tiers) — student reads a passage aloud (mic capture) → speech-to-text transcription (Azure Speech / local Whisper) → fluency scoring (pace/WPM, accuracy vs. source text, pronunciation) → narrated (early) or text (late) follow-up comprehension questions on the same passage, scored normally.
 - **Delivery** — to the student's own login, self-paced; early-tier sessions kept short with game-like pacing to avoid confounding attention data with fatigue.
 - **Grading agent** — objective grading for math/reading-with-answer-key items; LLM-rubric grading for open-ended, scenario, and fluency items.
 
