@@ -4,13 +4,15 @@
 
 **Goal:** Stand up the backend foundation — data model, database migrations, and auth — that every later pipeline (whole-child assessment, dashboard, topic-readiness) builds on.
 
-**Architecture:** FastAPI backend with SQLAlchemy 2.0 models and Alembic migrations, backed by Postgres (run locally via Docker Compose for dev/test). Two separate auth flows on the same JWT mechanism: teachers use email+password; students use a teacher-assigned numeric PIN scoped to their own record, since most students are too young for email-based accounts. No frontend in this plan — every deliverable is verified via FastAPI's test client against a real Postgres test database. The React app starts in the dashboard plan, which needs a UI shell anyway.
+**Architecture:** FastAPI backend with SQLAlchemy 2.0 models and Alembic migrations, backed by SQLite for local dev/test (file-based, zero-install — swapped in for the hackathon timeline; see note below). Two separate auth flows on the same JWT mechanism: teachers use email+password; students use a teacher-assigned numeric PIN scoped to their own record, since most students are too young for email-based accounts. No frontend in this plan — every deliverable is verified via FastAPI's test client against a real SQLite test database. The React app starts in the dashboard plan, which needs a UI shell anyway.
 
-**Tech Stack:** Python 3.11+, FastAPI, SQLAlchemy 2.0, Alembic, Postgres 16 (Docker), Pydantic v2 / pydantic-settings, passlib[bcrypt], python-jose[cryptography], pytest, httpx.
+**Tech Stack:** Python 3.11+, FastAPI, SQLAlchemy 2.0, Alembic, SQLite (file-based), Pydantic v2 / pydantic-settings, passlib[bcrypt], python-jose[cryptography], pytest, httpx.
+
+**Database note (2026-07-23):** The spec (§2) calls for Postgres, but this machine has no Docker and the native Postgres installer host was blocked by the local network — a dead end not worth spending hackathon time on. SQLite needs no install/service and is used here instead. SQLAlchemy/Alembic abstract most of the difference; the one real risk is Alembic's `ALTER TABLE` limitations on SQLite (it doesn't support most in-place alters), which don't bite here since every migration in this plan is an initial `CREATE TABLE`. Revisit before a real multi-user deployment.
 
 ## Global Constraints
 
-- Backend is Python (FastAPI) against Postgres — per spec §2.
+- Backend is Python (FastAPI); data layer is SQLite for now, see the database note above — per spec §2 (originally Postgres).
 - Single-school pilot: every table carries `school_id` so multi-school isolation can be added later without a rewrite — per spec §2, §7.
 - Each student has their own individual device/login (not shared classroom devices) — per spec §2.
 - Grade tiers are Early (K-5, represented as grade_level 0-5) and Late (6-12) — per spec §2.
@@ -67,8 +69,8 @@ backend/
     test_classes.py
     test_student_auth.py
   requirements.txt
-  docker-compose.yml
   .env.example
+  .gitignore
 ```
 
 ---
@@ -77,8 +79,8 @@ backend/
 
 **Files:**
 - Create: `backend/requirements.txt`
-- Create: `backend/docker-compose.yml`
 - Create: `backend/.env.example`
+- Create: `backend/.gitignore`
 - Create: `backend/app/__init__.py`
 - Create: `backend/app/config.py`
 - Create: `backend/app/database.py`
@@ -100,7 +102,6 @@ backend/
 fastapi>=0.111,<1.0
 uvicorn[standard]>=0.30,<1.0
 sqlalchemy>=2.0,<3.0
-psycopg2-binary>=2.9,<3.0
 alembic>=1.13,<2.0
 pydantic>=2.7,<3.0
 pydantic-settings>=2.3,<3.0
@@ -110,30 +111,11 @@ pytest>=8.2,<9.0
 httpx>=0.27,<1.0
 ```
 
-- [ ] **Step 2: Create `backend/docker-compose.yml`**
-
-```yaml
-services:
-  postgres:
-    image: postgres:16
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: k12_assessment
-    ports:
-      - "5432:5432"
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-
-volumes:
-  pgdata:
-```
-
-- [ ] **Step 3: Create `backend/.env.example`**
+- [ ] **Step 2: Create `backend/.env.example`**
 
 ```
-DATABASE_URL=postgresql+psycopg2://postgres:postgres@localhost:5432/k12_assessment
-TEST_DATABASE_URL=postgresql+psycopg2://postgres:postgres@localhost:5432/k12_assessment_test
+DATABASE_URL=sqlite:///./data/k12_assessment.db
+TEST_DATABASE_URL=sqlite:///./data/k12_assessment_test.db
 SECRET_KEY=change-me-in-real-deployments
 ACCESS_TOKEN_EXPIRE_MINUTES=720
 STUDENT_TOKEN_EXPIRE_MINUTES=120
@@ -141,20 +123,24 @@ STUDENT_TOKEN_EXPIRE_MINUTES=120
 
 Copy it: `cp backend/.env.example backend/.env` (Windows PowerShell: `Copy-Item backend/.env.example backend/.env`)
 
-- [ ] **Step 4: Start Postgres and create the two databases**
+- [ ] **Step 3: Create `backend/.gitignore`**
+
+```
+.venv/
+__pycache__/
+*.pyc
+.env
+data/
+```
+
+- [ ] **Step 4: Create the data directory for the SQLite files**
 
 Run:
 ```bash
-cd backend
-docker compose up -d
+mkdir -p backend/data
 ```
 
-Then create the test database (the compose file only creates `k12_assessment`):
-```bash
-docker compose exec postgres psql -U postgres -c "CREATE DATABASE k12_assessment_test;"
-```
-
-Expected: both commands complete without error; `docker compose ps` shows `postgres` as `running`.
+Expected: `backend/data/` exists (empty — SQLAlchemy creates the `.db` files inside it on first connection; this directory is gitignored, not the files themselves, per Step 3).
 
 - [ ] **Step 5: Create `backend/app/__init__.py`** (empty file)
 
@@ -190,7 +176,8 @@ from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
 from app.config import get_settings
 
 settings = get_settings()
-engine = create_engine(settings.database_url)
+_connect_args = {"check_same_thread": False} if settings.database_url.startswith("sqlite") else {}
+engine = create_engine(settings.database_url, connect_args=_connect_args)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
@@ -246,7 +233,8 @@ from app.database import Base, get_db
 from app.main import app
 
 settings = get_settings()
-engine = create_engine(settings.test_database_url)
+_connect_args = {"check_same_thread": False} if settings.test_database_url.startswith("sqlite") else {}
+engine = create_engine(settings.test_database_url, connect_args=_connect_args)
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
@@ -304,7 +292,7 @@ Expected: `test_health_check PASSED`
 - [ ] **Step 14: Commit**
 
 ```bash
-git add backend/requirements.txt backend/docker-compose.yml backend/.env.example backend/app backend/tests
+git add backend/requirements.txt backend/.env.example backend/.gitignore backend/app backend/tests
 git commit -m "chore: scaffold FastAPI backend with health check"
 ```
 
@@ -865,7 +853,7 @@ Run:
 alembic upgrade head
 ```
 
-Expected: no errors; `docker compose exec postgres psql -U postgres -d k12_assessment -c "SELECT count(*) FROM skill_dimensions;"` returns `11`.
+Expected: no errors. Verify with the `sqlite3` CLI (or Python): `sqlite3 backend/data/k12_assessment.db "SELECT count(*) FROM skill_dimensions;"` returns `11`.
 
 - [ ] **Step 11: Commit**
 
@@ -1743,7 +1731,7 @@ git commit -m "feat: add student PIN login and get_current_student dependency"
 
 ## Definition of done
 
-- `pytest -v` passes with zero failures against a real Postgres test database.
+- `pytest -v` passes with zero failures against a real SQLite test database.
 - A teacher can sign up, log in, create a class, add a student (receiving that student's one-time PIN), and view the roster.
 - A student can log in with `student_id` + PIN and fetch their own profile.
 - `SkillDimension` table contains the 11 seeded rows, ready for the whole-child pipeline plan to grade against.
