@@ -48,3 +48,15 @@ def test_teacher_email_must_be_unique(db_session):
     )
     with pytest.raises(IntegrityError):
         db_session.flush()
+
+
+def test_teacher_requires_existing_school(db_session):
+    teacher = Teacher(
+        school_id=9999,  # nonexistent school
+        email="orphan@example.com",
+        hashed_password="hashed",
+        full_name="Orphan Teacher",
+    )
+    db_session.add(teacher)
+    with pytest.raises(IntegrityError):
+        db_session.flush()
