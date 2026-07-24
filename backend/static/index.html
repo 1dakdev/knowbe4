@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Roster (demo)</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 480px; margin: 40px auto; padding: 0 16px; color: #1a1a1a; }
+  h1 { font-size: 1.25rem; }
+  form { display: flex; flex-direction: column; gap: 8px; margin: 16px 0; }
+  input { padding: 8px; font-size: 1rem; }
+  button { padding: 8px; font-size: 1rem; cursor: pointer; }
+  .error { color: #b00020; font-size: 0.9rem; }
+  ul { list-style: none; padding: 0; }
+  li { padding: 8px 0; border-bottom: 1px solid #ddd; cursor: pointer; }
+  li:hover { background: #f5f5f5; }
+  .roster-item { display: flex; justify-content: space-between; cursor: default; }
+  .roster-item:hover { background: none; }
+  .pin-banner { background: #fff8d6; border: 1px solid #e0c94c; padding: 12px; margin: 12px 0; display: flex; justify-content: space-between; align-items: center; }
+  .back { background: none; border: none; color: #06c; padding: 0; margin-bottom: 12px; text-align: left; }
+  [hidden] { display: none; }
+</style>
+</head>
+<body>
+
+<section id="login-view">
+  <h1>Teacher login</h1>
+  <form id="login-form">
+    <input type="email" id="login-email" placeholder="Email" required />
+    <input type="password" id="login-password" placeholder="Password" required />
+    <button type="submit">Log in</button>
+  </form>
+  <p class="error" id="login-error" hidden></p>
+</section>
+
+<section id="classes-view" hidden>
+  <h1>Your classes</h1>
+  <ul id="classes-list"></ul>
+  <p class="error" id="classes-error" hidden></p>
+</section>
+
+<section id="roster-view" hidden>
+  <button class="back" id="back-to-classes">&larr; Back to classes</button>
+  <h1 id="roster-title"></h1>
+  <div id="pin-banner" class="pin-banner" hidden>
+    <span id="pin-banner-text"></span>
+    <button id="pin-banner-dismiss">&times;</button>
+  </div>
+  <ul id="roster-list"></ul>
+
+  <h2>Add student</h2>
+  <form id="add-student-form">
+    <input type="text" id="student-name" placeholder="Full name" required />
+    <input type="number" id="student-grade" placeholder="Grade level" required />
+    <button type="submit">Add student</button>
+  </form>
+  <p class="error" id="roster-error" hidden></p>
+</section>
+
+<script>
+  let token = null;
+  let currentClassId = null;
+
+  const views = {
+    login: document.getElementById("login-view"),
+    classes: document.getElementById("classes-view"),
+    roster: document.getElementById("roster-view"),
+  };
+
+  function showView(name) {
+    for (const key in views) views[key].hidden = key !== name;
+  }
+
+  function showError(elementId, message) {
+    const el = document.getElementById(elementId);
+    el.textContent = message;
+    el.hidden = false;
+  }
+
+  function clearError(elementId) {
+    const el = document.getElementById(elementId);
+    el.hidden = true;
+  }
+
+  async function api(path, options = {}) {
+    const headers = Object.assign({ "Content-Type": "application/json" }, options.headers || {});
+    if (token) headers.Authorization = "Bearer " + token;
+    const response = await fetch(path, Object.assign({}, options, { headers }));
+    const body = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      const message = (body && body.detail) || `Request failed (${response.status})`;
+      throw new Error(message);
+    }
+    return body;
+  }
+
+  document.getElementById("login-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    clearError("login-error");
+    const email = document.getElementById("login-email").value;
+    const password = document.getElementById("login-password").value;
+    try {
+      const result = await api("/auth/teacher/login", {
+        method: "POST",
+        body: JSON.stringify({ email, password }),
+      });
+      token = result.access_token;
+      await loadClasses();
+      showView("classes");
+    } catch (err) {
+      showError("login-error", err.message);
+    }
+  });
+
+  async function loadClasses() {
+    clearError("classes-error");
+    try {
+      const classesList = await api("/classes");
+      const list = document.getElementById("classes-list");
+      list.innerHTML = "";
+      for (const schoolClass of classesList) {
+        const item = document.createElement("li");
+        item.textContent = `${schoolClass.name} (grade ${schoolClass.grade_level})`;
+        item.addEventListener("click", () => openRoster(schoolClass.id));
+        list.appendChild(item);
+      }
+    } catch (err) {
+      showError("classes-error", err.message);
+    }
+  }
+
+  async function openRoster(classId) {
+    currentClassId = classId;
+    document.getElementById("pin-banner").hidden = true;
+    clearError("roster-error");
+    try {
+      const roster = await api(`/classes/${classId}`);
+      document.getElementById("roster-title").textContent = `${roster.name} (grade ${roster.grade_level})`;
+      const list = document.getElementById("roster-list");
+      list.innerHTML = "";
+      for (const student of roster.students) {
+        const item = document.createElement("li");
+        item.className = "roster-item";
+        const scoreText = student.latest_score === null ? "No score yet" : `Score: ${student.latest_score}`;
+        item.innerHTML = `<span>${student.full_name} (grade ${student.grade_level})</span><span>${scoreText}</span>`;
+        const assessButton = document.createElement("button");
+        assessButton.textContent = "Assess";
+        assessButton.addEventListener("click", async () => {
+          assessButton.disabled = true;
+          assessButton.textContent = "Sending...";
+          try {
+            await api(`/classes/${currentClassId}/students/${student.id}/assessments`, { method: "POST" });
+            assessButton.textContent = "Question sent";
+          } catch (err) {
+            assessButton.textContent = "Assess";
+            assessButton.disabled = false;
+            showError("roster-error", err.message);
+          }
+        });
+        item.appendChild(assessButton);
+        list.appendChild(item);
+      }
+      showView("roster");
+    } catch (err) {
+      showError("classes-error", err.message);
+    }
+  }
+
+  document.getElementById("back-to-classes").addEventListener("click", () => {
+    showView("classes");
+    loadClasses();
+  });
+
+  document.getElementById("add-student-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    clearError("roster-error");
+    const nameInput = document.getElementById("student-name");
+    const gradeInput = document.getElementById("student-grade");
+    try {
+      const created = await api(`/classes/${currentClassId}/students`, {
+        method: "POST",
+        body: JSON.stringify({ full_name: nameInput.value, grade_level: Number(gradeInput.value) }),
+      });
+      document.getElementById("pin-banner-text").textContent =
+        `${created.full_name}'s PIN: ${created.pin} — write this down, it won't be shown again`;
+      document.getElementById("pin-banner").hidden = false;
+      nameInput.value = "";
+      gradeInput.value = "";
+      await openRoster(currentClassId);
+      document.getElementById("pin-banner").hidden = false;
+    } catch (err) {
+      showError("roster-error", err.message);
+    }
+  });
+
+  document.getElementById("pin-banner-dismiss").addEventListener("click", () => {
+    document.getElementById("pin-banner").hidden = true;
+  });
+</script>
+
+</body>
+</html>
