@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Student assessment (demo)</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 480px; margin: 40px auto; padding: 0 16px; color: #1a1a1a; }
+  h1 { font-size: 1.25rem; }
+  form { display: flex; flex-direction: column; gap: 8px; margin: 16px 0; }
+  input { padding: 8px; font-size: 1rem; }
+  button { padding: 8px; font-size: 1rem; cursor: pointer; }
+  .error { color: #b00020; font-size: 0.9rem; }
+  .question { background: #f5f5f5; padding: 12px; margin: 12px 0; }
+  .result { background: #e6f4ea; border: 1px solid #34a853; padding: 12px; margin: 12px 0; }
+  [hidden] { display: none; }
+</style>
+</head>
+<body>
+
+<section id="login-view">
+  <h1>Student login</h1>
+  <form id="login-form">
+    <input type="number" id="login-student-id" placeholder="Student ID" required />
+    <input type="text" id="login-pin" placeholder="PIN" required />
+    <button type="submit">Log in</button>
+  </form>
+  <p class="error" id="login-error" hidden></p>
+</section>
+
+<section id="question-view" hidden>
+  <h1>Your question</h1>
+  <div id="no-question" hidden>No questions right now.</div>
+  <div id="question-box" hidden>
+    <p class="question" id="question-text"></p>
+    <form id="answer-form">
+      <input type="number" id="answer-input" placeholder="Your answer" required />
+      <button type="submit">Submit answer</button>
+    </form>
+  </div>
+  <div class="result" id="result-box" hidden>
+    <p id="result-score"></p>
+    <p id="result-feedback"></p>
+  </div>
+  <p class="error" id="question-error" hidden></p>
+</section>
+
+<script>
+  let token = null;
+  let currentItemId = null;
+
+  const views = {
+    login: document.getElementById("login-view"),
+    question: document.getElementById("question-view"),
+  };
+
+  function showView(name) {
+    for (const key in views) views[key].hidden = key !== name;
+  }
+
+  function showError(elementId, message) {
+    const el = document.getElementById(elementId);
+    el.textContent = message;
+    el.hidden = false;
+  }
+
+  function clearError(elementId) {
+    document.getElementById(elementId).hidden = true;
+  }
+
+  async function api(path, options = {}) {
+    const headers = Object.assign({ "Content-Type": "application/json" }, options.headers || {});
+    if (token) headers.Authorization = "Bearer " + token;
+    const response = await fetch(path, Object.assign({}, options, { headers }));
+    const body = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      const message = (body && body.detail) || `Request failed (${response.status})`;
+      throw new Error(message);
+    }
+    return body;
+  }
+
+  document.getElementById("login-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    clearError("login-error");
+    const studentId = document.getElementById("login-student-id").value;
+    const pin = document.getElementById("login-pin").value;
+    try {
+      const result = await api("/auth/student/login", {
+        method: "POST",
+        body: JSON.stringify({ student_id: Number(studentId), pin }),
+      });
+      token = result.access_token;
+      showView("question");
+      await loadPendingQuestion();
+    } catch (err) {
+      showError("login-error", err.message);
+    }
+  });
+
+  async function loadPendingQuestion() {
+    clearError("question-error");
+    document.getElementById("result-box").hidden = true;
+    try {
+      const pending = await api("/auth/student/assessments/pending");
+      if (pending.length === 0) {
+        document.getElementById("no-question").hidden = false;
+        document.getElementById("question-box").hidden = true;
+        return;
+      }
+      currentItemId = pending[0].id;
+      document.getElementById("question-text").textContent = pending[0].question_text;
+      document.getElementById("no-question").hidden = true;
+      document.getElementById("question-box").hidden = false;
+    } catch (err) {
+      showError("question-error", err.message);
+    }
+  }
+
+  document.getElementById("answer-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    clearError("question-error");
+    const answerInput = document.getElementById("answer-input");
+    try {
+      const result = await api(`/assessments/${currentItemId}/answer`, {
+        method: "POST",
+        body: JSON.stringify({ answer: answerInput.value }),
+      });
+      document.getElementById("question-box").hidden = true;
+      document.getElementById("result-score").textContent = `Score: ${result.score}`;
+      document.getElementById("result-feedback").textContent = result.feedback;
+      document.getElementById("result-box").hidden = false;
+      answerInput.value = "";
+    } catch (err) {
+      showError("question-error", err.message);
+    }
+  });
+</script>
+
+</body>
+</html>
