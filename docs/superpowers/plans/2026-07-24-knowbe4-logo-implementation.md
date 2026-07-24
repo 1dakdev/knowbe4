@@ -20,6 +20,15 @@
 
 ### Task 1: Apply wordmark + favicon to `backend/static/index.html`
 
+> **Adapted during execution:** the committed version of this file (unlike
+> the uncommitted draft the design was originally checked against) has no
+> navy `.login-brand` panel — it's a plain white page titled "Roster (demo)"
+> with a bare `<h1>Teacher login</h1>`. Steps below target this actual
+> current structure: fix the stale title, and follow the same
+> `wordmark — Page purpose` heading pattern already used in `student.html`,
+> using the light variant throughout (both files are plain white
+> backgrounds right now — no dark-background usage exists yet).
+
 **Files:**
 - Modify: `backend/static/index.html`
 
