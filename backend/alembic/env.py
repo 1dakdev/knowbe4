@@ -5,7 +5,14 @@ from sqlalchemy import engine_from_config, pool
 
 from app.config import get_settings
 from app.database import Base
-from app.models import school, school_class, skill_dimension, student, teacher  # noqa: F401 — ensures models register on Base.metadata
+from app.models import (  # noqa: F401 — ensures models register on Base.metadata
+    assessment_item,
+    school,
+    school_class,
+    skill_dimension,
+    student,
+    teacher,
+)
 
 config = context.config
 if config.config_file_name is not None:
