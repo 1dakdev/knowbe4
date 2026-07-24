@@ -120,3 +120,18 @@ def test_roster_shows_null_latest_score_when_no_assessments(client, db_session):
 
     assert roster.status_code == 200
     assert roster.json()["students"][0]["latest_score"] is None
+
+
+def test_list_classes_returns_only_own_classes(client, db_session):
+    token_a = _signup_and_login(client, db_session, email="teacher.a@riverside.example")
+    token_b = _signup_and_login(client, db_session, email="teacher.b@riverside.example")
+    headers_a = {"Authorization": f"Bearer {token_a}"}
+    headers_b = {"Authorization": f"Bearer {token_b}"}
+
+    client.post("/classes", json={"name": "Teacher A's Class", "grade_level": 4}, headers=headers_a)
+    client.post("/classes", json={"name": "Teacher B's Class", "grade_level": 5}, headers=headers_b)
+
+    response = client.get("/classes", headers=headers_a)
+    assert response.status_code == 200
+    names = [c["name"] for c in response.json()]
+    assert names == ["Teacher A's Class"]
