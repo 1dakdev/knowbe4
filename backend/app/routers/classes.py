@@ -6,11 +6,12 @@ from sqlalchemy.orm import Session
 from app.auth.dependencies import get_current_teacher
 from app.auth.security import hash_secret
 from app.database import get_db
+from app.models.assessment_item import latest_score_for_student
 from app.models.school_class import SchoolClass
 from app.models.student import Student
 from app.models.teacher import Teacher
 from app.schemas.school_class import ClassCreateIn, ClassOut, RosterOut
-from app.schemas.student import StudentCreateIn, StudentCreatedOut
+from app.schemas.student import StudentCreateIn, StudentCreatedOut, StudentOut
 
 router = APIRouter()
 
@@ -48,11 +49,20 @@ def get_roster(
 ):
     school_class = _get_owned_class(class_id, current_teacher, db)
     students = db.query(Student).filter(Student.class_id == school_class.id).all()
+    student_outs = [
+        StudentOut(
+            id=s.id,
+            full_name=s.full_name,
+            grade_level=s.grade_level,
+            latest_score=latest_score_for_student(s.id, db),
+        )
+        for s in students
+    ]
     return RosterOut(
         id=school_class.id,
         name=school_class.name,
         grade_level=school_class.grade_level,
-        students=students,
+        students=student_outs,
     )
 
 
