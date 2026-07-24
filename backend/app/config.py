@@ -11,6 +11,7 @@ class Settings(BaseSettings):
     secret_key: str
     access_token_expire_minutes: int = 720
     student_token_expire_minutes: int = 120
+    gemini_api_key: str = ""
 
 
 @lru_cache
