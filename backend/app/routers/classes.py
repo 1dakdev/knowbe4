@@ -41,14 +41,6 @@ def create_class(
     return school_class
 
 
-@router.get("/classes", response_model=list[ClassOut])
-def list_classes(
-    current_teacher: Teacher = Depends(get_current_teacher),
-    db: Session = Depends(get_db),
-):
-    return db.query(SchoolClass).filter(SchoolClass.teacher_id == current_teacher.id).all()
-
-
 @router.get("/classes/{class_id}", response_model=RosterOut)
 def get_roster(
     class_id: int,
