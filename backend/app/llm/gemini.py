@@ -5,7 +5,7 @@ from google.genai import types
 
 from app.config import get_settings
 
-_MODEL = "gemini-2.0-flash"
+_MODEL = "gemini-2.5-flash"
 
 
 class GeminiError(Exception):
