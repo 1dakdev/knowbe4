@@ -1,22 +1,17 @@
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy import create_engine, event
+from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from app.config import get_settings
-from app.database import Base, get_db
+from app.database import Base, enable_sqlite_foreign_keys, get_db, sqlite_connect_args
 from app.main import app
 
 settings = get_settings()
-_connect_args = {"check_same_thread": False} if settings.test_database_url.startswith("sqlite") else {}
-engine = create_engine(settings.test_database_url, connect_args=_connect_args)
-
-if settings.test_database_url.startswith("sqlite"):
-    @event.listens_for(engine, "connect")
-    def _enable_sqlite_foreign_keys(dbapi_connection, connection_record):
-        cursor = dbapi_connection.cursor()
-        cursor.execute("PRAGMA foreign_keys=ON")
-        cursor.close()
+engine = create_engine(
+    settings.test_database_url, connect_args=sqlite_connect_args(settings.test_database_url)
+)
+enable_sqlite_foreign_keys(engine, settings.test_database_url)
 
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
