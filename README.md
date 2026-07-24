@@ -1,4 +1,4 @@
-# K-12 Autonomous Student Assessment Platform
+# KnowBe4 — K-12 Autonomous Student Assessment Platform
 
 Gives teachers a fast, accurate picture of their students — both as whole
 people (academic, cognitive, social-emotional skills) and as a class facing a

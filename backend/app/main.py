@@ -5,7 +5,7 @@ from fastapi.staticfiles import StaticFiles
 
 from app.routers import assessments, classes, health, student_auth, teacher_auth
 
-app = FastAPI(title="K-12 Assessment Platform")
+app = FastAPI(title="KnowBe4")
 
 app.include_router(health.router)
 app.include_router(teacher_auth.router)
