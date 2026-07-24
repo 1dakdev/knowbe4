@@ -40,6 +40,11 @@
   <div class="result" id="result-box" hidden>
     <p id="result-score"></p>
     <p id="result-feedback"></p>
+    <button type="button" id="next-question-btn">Next question</button>
+  </div>
+  <div id="done-box" hidden>
+    <p>All done — nice work!</p>
+    <button type="button" id="logout-btn">Sign out</button>
   </div>
   <p class="error" id="question-error" hidden></p>
 </section>
@@ -100,11 +105,13 @@
   async function loadPendingQuestion() {
     clearError("question-error");
     document.getElementById("result-box").hidden = true;
+    document.getElementById("done-box").hidden = true;
+    document.getElementById("answer-input").value = "";
     try {
       const pending = await api("/auth/student/assessments/pending");
       if (pending.length === 0) {
-        document.getElementById("no-question").hidden = false;
         document.getElementById("question-box").hidden = true;
+        document.getElementById("done-box").hidden = false;
         return;
       }
       currentItemId = pending[0].id;
@@ -129,10 +136,20 @@
       document.getElementById("result-score").textContent = `Score: ${result.score}`;
       document.getElementById("result-feedback").textContent = result.feedback;
       document.getElementById("result-box").hidden = false;
-      answerInput.value = "";
     } catch (err) {
       showError("question-error", err.message);
     }
+  });
+
+  document.getElementById("next-question-btn").addEventListener("click", () => {
+    loadPendingQuestion();
+  });
+
+  document.getElementById("logout-btn").addEventListener("click", () => {
+    token = null;
+    document.getElementById("login-student-id").value = "";
+    document.getElementById("login-pin").value = "";
+    showView("login");
   });
 </script>
 

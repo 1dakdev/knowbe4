@@ -393,6 +393,15 @@
   }
   .mission-feedback { color: var(--text-dim); margin: 0; font-size: 0.92rem; line-height: 1.5; }
 
+  /* --- Profile view --- */
+  #profile-view { max-width: 480px; margin: 0 auto; padding: 24px 16px; }
+  #profile-summary { background: #f9f5f0; padding: 16px; border-radius: 12px; margin: 20px 0; font-size: 0.95rem; line-height: 1.6; color: #5f5f5f; }
+  #profile-dimensions { list-style: none; padding: 0; margin: 0; }
+  #profile-dimensions li { padding: 12px 16px; margin-bottom: 8px; border-radius: 8px; background: #fff; border: 1px solid var(--border); }
+  #profile-dimensions li.unavailable { opacity: 0.5; }
+  #profile-dimensions li span:last-child { color: var(--text-dim); font-size: 0.85rem; }
+  #assess-full-profile-btn { width: 100%; margin-top: 20px; }
+
   [hidden] { display: none; }
 </style>
 </head>
@@ -477,6 +486,18 @@
   <p class="error" id="roster-error" hidden></p>
 </section>
 
+<section id="profile-view" hidden>
+  <button type="button" class="back" id="back-to-roster">&larr; Back to roster</button>
+  <h1 id="profile-student-name"></h1>
+  <div id="profile-summary"></div>
+  <div id="profile-dimensions-wrapper">
+    <h2>Assessment dimensions</h2>
+    <ul id="profile-dimensions"></ul>
+  </div>
+  <button type="button" id="assess-full-profile-btn">Assess full profile</button>
+  <p class="error" id="profile-error" hidden></p>
+</section>
+
 <section id="student-view" hidden>
   <div class="student-shell">
     <div class="student-topbar">
@@ -503,11 +524,14 @@
   let token = null;
   let currentClassId = null;
 
+  let currentProfileStudentId = null;
+
   const views = {
     login: document.getElementById("login-view"),
     classes: document.getElementById("classes-view"),
     roster: document.getElementById("roster-view"),
     student: document.getElementById("student-view"),
+    profile: document.getElementById("profile-view"),
   };
 
   function showView(name) {
@@ -584,8 +608,21 @@
       for (const student of roster.students) {
         const item = document.createElement("li");
         item.className = "roster-item";
+
+        const nameSpan = document.createElement("span");
+        nameSpan.style.cursor = "pointer";
+        nameSpan.style.fontWeight = "600";
+        nameSpan.textContent = `${student.full_name} (grade ${student.grade_level})`;
+        nameSpan.addEventListener("click", () => openProfile(classId, student.id, student.full_name));
+        item.appendChild(nameSpan);
+
+        const scoreSpan = document.createElement("span");
+        scoreSpan.style.color = "var(--text-dim)";
+        scoreSpan.style.fontSize = "0.85rem";
         const scoreText = student.latest_score === null ? "No score yet" : `Score: ${student.latest_score}`;
-        item.innerHTML = `<span>${student.full_name} (grade ${student.grade_level})</span><span>${scoreText}</span>`;
+        scoreSpan.textContent = scoreText;
+        item.appendChild(scoreSpan);
+
         const assessButton = document.createElement("button");
         assessButton.textContent = "Assess";
         assessButton.addEventListener("click", async () => {
@@ -769,6 +806,60 @@
     token = null;
     document.getElementById("student-login-form").reset();
     showView("login");
+  });
+
+  async function openProfile(classId, studentId, studentName) {
+    currentProfileStudentId = studentId;
+    clearError("profile-error");
+    document.getElementById("profile-student-name").textContent = studentName;
+    try {
+      const profile = await api(`/classes/${classId}/students/${studentId}/profile`);
+      document.getElementById("profile-summary").textContent = profile.summary;
+      const list = document.getElementById("profile-dimensions");
+      list.innerHTML = "";
+      for (const dim of profile.dimensions) {
+        const li = document.createElement("li");
+        if (!dim.available) {
+          li.className = "unavailable";
+          li.innerHTML = `<span>${dim.name}</span><span>Not available yet</span>`;
+        } else if (dim.latest_score === null) {
+          li.innerHTML = `<span>${dim.name}</span><span>Not yet assessed</span>`;
+        } else {
+          li.innerHTML = `<span>${dim.name}</span><span>${dim.latest_score} — ${dim.latest_feedback}</span>`;
+        }
+        list.appendChild(li);
+      }
+      showView("profile");
+    } catch (err) {
+      showError("profile-error", err.message);
+    }
+  }
+
+  document.getElementById("back-to-roster").addEventListener("click", () => {
+    showView("roster");
+  });
+
+  document.getElementById("assess-full-profile-btn").addEventListener("click", async () => {
+    const btn = document.getElementById("assess-full-profile-btn");
+    btn.disabled = true;
+    const originalText = btn.textContent;
+    btn.textContent = "Generating...";
+    try {
+      const result = await api(`/classes/${currentClassId}/students/${currentProfileStudentId}/assess-profile`, {
+        method: "POST",
+      });
+      const created = result.created.length;
+      const total = result.created.length + result.failed.length;
+      btn.textContent = `Generated ${created} of ${total}`;
+      if (result.failed.length > 0) {
+        showError("profile-error", `Failed: ${result.failed.join(", ")}`);
+      }
+      setTimeout(() => openProfile(currentClassId, currentProfileStudentId, document.getElementById("profile-student-name").textContent), 1000);
+    } catch (err) {
+      showError("profile-error", err.message);
+      btn.textContent = originalText;
+      btn.disabled = false;
+    }
   });
 </script>
 
