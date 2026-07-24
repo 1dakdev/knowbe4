@@ -27,7 +27,8 @@ def generate_math_question(grade_level: int) -> dict:
         "grades 9-12 use algebra, geometry, or multi-step reasoning."
     )
     try:
-        response = _client().models.generate_content(
+        client = _client()
+        response = client.models.generate_content(
             model=_MODEL,
             contents=prompt,
             config=types.GenerateContentConfig(
@@ -59,7 +60,8 @@ def grade_answer(question_text: str, correct_answer: str, student_answer: str, r
         "feedback explaining the score."
     )
     try:
-        response = _client().models.generate_content(
+        client = _client()
+        response = client.models.generate_content(
             model=_MODEL,
             contents=prompt,
             config=types.GenerateContentConfig(
