@@ -75,6 +75,7 @@ def grade_answer(question_text: str, correct_answer: str, student_answer: str, r
             ),
         )
         data = json.loads(response.text)
-        return {"score": int(data["score"]), "feedback": data["feedback"]}
+        score = max(0, min(100, int(data["score"])))
+        return {"score": score, "feedback": data["feedback"]}
     except Exception as exc:
         raise GeminiError(f"Grading failed: {exc}") from exc
