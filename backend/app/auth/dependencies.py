@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.auth.security import decode_access_token
 from app.database import get_db
+from app.models.student import Student
 from app.models.teacher import Teacher
 
 _bearer_scheme = HTTPBearer(auto_error=False)
@@ -27,3 +28,22 @@ def get_current_teacher(
     if teacher is None:
         raise unauthorized
     return teacher
+
+
+def get_current_student(
+    credentials: HTTPAuthorizationCredentials | None = Depends(_bearer_scheme),
+    db: Session = Depends(get_db),
+) -> Student:
+    unauthorized = HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
+    if credentials is None:
+        raise unauthorized
+    try:
+        payload = decode_access_token(credentials.credentials)
+    except JWTError:
+        raise unauthorized
+    if payload.get("role") != "student":
+        raise unauthorized
+    student = db.get(Student, int(payload["sub"]))
+    if student is None:
+        raise unauthorized
+    return student
