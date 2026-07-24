@@ -2,34 +2,455 @@
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<title>Roster (demo)</title>
+<title>KnowBe4</title>
 <style>
-  body { font-family: system-ui, sans-serif; max-width: 480px; margin: 40px auto; padding: 0 16px; color: #1a1a1a; }
-  h1 { font-size: 1.25rem; }
+  :root {
+    --bg: #f4f6f9;
+    --surface: #ffffff;
+    --border: #dde2e8;
+    --text: #1f2937;
+    --text-dim: #6b7280;
+    --accent: #2563eb;
+    --accent-hover: #1d4ed8;
+    --danger: #b91c1c;
+    --danger-bg: #fef2f2;
+    --danger-border: #fecaca;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+    margin: 0;
+    min-height: 100vh;
+    color: var(--text);
+    background: var(--bg);
+  }
+
+  section { padding: 24px 16px; }
+
+  h1 { font-size: 1.3rem; font-weight: 600; margin: 0 0 4px; }
+  h2 { font-size: 0.95rem; font-weight: 600; margin: 24px 0 12px; color: var(--text-dim); }
+
+  /* --- Login --- */
+  #login-view {
+    min-height: 100vh;
+    padding: 0;
+    display: flex;
+  }
+
+  .login-brand {
+    flex: 1 1 42%;
+    background: #0f2149;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 64px;
+  }
+
+  .login-brand .login-logo {
+    width: 40px;
+    height: 40px;
+    margin: 0 0 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #0f2149;
+    background: #fff;
+  }
+
+  .login-brand h1 {
+    font-size: 1.7rem;
+    font-weight: 600;
+    max-width: 360px;
+    margin: 0 0 12px;
+  }
+
+  .login-brand p {
+    color: #b7c1d6;
+    font-size: 0.95rem;
+    max-width: 340px;
+    line-height: 1.5;
+    margin: 0 0 32px;
+  }
+
+  .login-brand ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .login-brand li {
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    cursor: default;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.9rem;
+    color: #dde3ee;
+  }
+  .login-brand li::before {
+    content: "";
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.12);
+  }
+
+  .login-form-panel {
+    flex: 1 1 58%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--surface);
+    padding: 32px;
+  }
+
+  .login-card {
+    width: 100%;
+    max-width: 340px;
+  }
+
+  .login-card h1 { font-size: 1.4rem; }
+  .login-subtitle { color: var(--text-dim); font-size: 0.9rem; margin: 0 0 28px; }
+
+  .login-tabs {
+    display: flex;
+    gap: 4px;
+    background: var(--bg);
+    border-radius: 8px;
+    padding: 4px;
+    margin-bottom: 28px;
+  }
+  .login-tab {
+    flex: 1;
+    border: none;
+    border-radius: 6px;
+    padding: 8px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--text-dim);
+    background: transparent;
+  }
+  .login-tab:hover { background: transparent; color: var(--text); }
+  .login-tab.active { background: var(--surface); color: var(--text); box-shadow: 0 1px 2px rgba(16, 24, 40, 0.08); }
+
+  .field { text-align: left; margin-bottom: 14px; }
+  .field label {
+    display: block;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+
+  @media (max-width: 860px) {
+    .login-brand { display: none; }
+    .login-form-panel { flex: 1 1 100%; }
+  }
+
+  /* --- Forms (shared) --- */
   form { display: flex; flex-direction: column; gap: 8px; margin: 16px 0; }
-  input { padding: 8px; font-size: 1rem; }
-  button { padding: 8px; font-size: 1rem; cursor: pointer; }
-  .error { color: #b00020; font-size: 0.9rem; }
-  ul { list-style: none; padding: 0; }
-  li { padding: 8px 0; border-bottom: 1px solid #ddd; cursor: pointer; }
-  li:hover { background: #f5f5f5; }
-  .roster-item { display: flex; justify-content: space-between; cursor: default; }
-  .roster-item:hover { background: none; }
-  .pin-banner { background: #fff8d6; border: 1px solid #e0c94c; padding: 12px; margin: 12px 0; display: flex; justify-content: space-between; align-items: center; }
-  .back { background: none; border: none; color: #06c; padding: 0; margin-bottom: 12px; text-align: left; }
+
+  input {
+    padding: 10px 12px;
+    font-size: 0.95rem;
+    font-family: inherit;
+    color: var(--text);
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    outline: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+  input::placeholder { color: #9ca3af; }
+  input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+  }
+  input:-webkit-autofill {
+    -webkit-text-fill-color: var(--text);
+    -webkit-box-shadow: 0 0 0 1000px #fff inset;
+    box-shadow: 0 0 0 1000px #fff inset;
+  }
+
+  button {
+    padding: 10px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    border-radius: 6px;
+    color: var(--text);
+    background: #fff;
+    border: 1px solid var(--border);
+    transition: background 0.15s ease, border-color 0.15s ease;
+  }
+  button:hover { background: #f3f4f6; }
+  button:active { transform: translateY(1px); }
+  button:disabled { opacity: 0.6; cursor: default; transform: none; }
+
+  .login-card button[type="submit"] {
+    margin-top: 8px;
+    color: #fff;
+    background: var(--accent);
+    border: 1px solid var(--accent);
+  }
+  .login-card button[type="submit"]:hover {
+    background: var(--accent-hover);
+    border-color: var(--accent-hover);
+  }
+
+  .error {
+    color: var(--danger);
+    background: var(--danger-bg);
+    border: 1px solid var(--danger-border);
+    padding: 10px 12px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    text-align: left;
+    margin-top: 12px;
+  }
+
+  /* --- Classes / roster --- */
+  #classes-view, #roster-view { max-width: 480px; margin: 0 auto; }
+
+  ul { list-style: none; padding: 0; margin: 12px 0; }
+
+  li {
+    padding: 14px 16px;
+    margin-bottom: 8px;
+    border-radius: 8px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+  li:hover { border-color: var(--accent); box-shadow: 0 1px 3px rgba(16, 24, 40, 0.08); }
+
+  .roster-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: default;
+    gap: 12px;
+  }
+  .roster-item:hover { border-color: var(--border); box-shadow: none; }
+  .roster-item span:first-child { font-weight: 600; }
+  .roster-item span:nth-child(2) { color: var(--text-dim); font-size: 0.85rem; }
+  .roster-item button { flex-shrink: 0; }
+
+  .pin-banner {
+    background: #fffbeb;
+    border: 1px solid #fde68a;
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin: 16px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+  }
+  .pin-banner span { font-size: 0.9rem; color: #92400e; }
+  .pin-banner button {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    line-height: 1;
+    padding: 0 4px;
+    color: #92400e;
+  }
+  .pin-banner button:hover { color: #78350f; background: none; }
+
+  .back {
+    background: none;
+    border: none;
+    color: var(--accent);
+    padding: 0;
+    margin-bottom: 16px;
+    text-align: left;
+    font-weight: 600;
+  }
+  .back:hover { color: var(--accent-hover); background: none; }
+
+  /* --- Student dashboard --- */
+  #student-view {
+    min-height: 100vh;
+    background: #fff8ef;
+    padding: 0;
+  }
+
+  .student-shell { max-width: 640px; margin: 0 auto; padding: 32px 20px 64px; }
+
+  .student-topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+
+  .student-eyebrow {
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #ea8a3b;
+    margin: 0 0 4px;
+  }
+
+  #student-greeting { font-size: 1.9rem; font-weight: 800; letter-spacing: -0.01em; }
+  #student-grade-label { color: var(--text-dim); font-size: 0.95rem; margin: 4px 0 0; }
+
+  .student-logout {
+    background: #fff;
+    border: 1px solid #f0d9bf;
+    color: #9a5b1f;
+    font-weight: 600;
+    padding: 8px 16px;
+    border-radius: 999px;
+    flex-shrink: 0;
+  }
+  .student-logout:hover { background: #fff3e4; }
+
+  .student-empty {
+    background: #fff;
+    border: 1px dashed #f0d9bf;
+    border-radius: 20px;
+    padding: 40px 24px;
+    text-align: center;
+  }
+  .student-empty h2 { color: var(--text); font-size: 1.15rem; margin: 0 0 6px; }
+  .student-empty p { color: var(--text-dim); margin: 0; font-size: 0.92rem; }
+
+  .mission-card {
+    background: #fff;
+    border-radius: 20px;
+    padding: 24px;
+    margin-bottom: 18px;
+    box-shadow: 0 2px 6px rgba(154, 91, 31, 0.06), 0 12px 28px rgba(154, 91, 31, 0.06);
+    border-left: 6px solid #f59e0b;
+  }
+  .mission-card.is-done { border-left-color: #22a06b; }
+
+  .mission-badge {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #b45309;
+    background: #fef3c7;
+    padding: 4px 10px;
+    border-radius: 999px;
+    margin-bottom: 12px;
+  }
+  .mission-card.is-done .mission-badge { color: #15754f; background: #dcf5e8; }
+
+  .mission-question {
+    font-size: 1.08rem;
+    font-weight: 600;
+    line-height: 1.5;
+    margin: 0 0 18px;
+  }
+
+  .mission-answer-form { flex-direction: row; margin: 0; gap: 10px; }
+  .mission-answer-form input {
+    flex: 1;
+    border-radius: 999px;
+    padding: 12px 18px;
+  }
+  .mission-answer-form input:focus { box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2); border-color: #f59e0b; }
+  .mission-answer-form button {
+    border-radius: 999px;
+    padding: 12px 22px;
+    color: #fff;
+    background: #f59e0b;
+    border: 1px solid #f59e0b;
+    white-space: nowrap;
+  }
+  .mission-answer-form button:hover { background: #d9860a; border-color: #d9860a; }
+
+  .mission-card .error { margin-top: 12px; margin-bottom: 0; }
+
+  .mission-result { display: flex; align-items: center; gap: 16px; }
+  .mission-score {
+    font-size: 1.7rem;
+    font-weight: 800;
+    color: #15754f;
+    margin: 0;
+    flex-shrink: 0;
+  }
+  .mission-feedback { color: var(--text-dim); margin: 0; font-size: 0.92rem; line-height: 1.5; }
+
   [hidden] { display: none; }
 </style>
 </head>
 <body>
 
 <section id="login-view">
-  <h1>Teacher login</h1>
-  <form id="login-form">
-    <input type="email" id="login-email" placeholder="Email" required />
-    <input type="password" id="login-password" placeholder="Password" required />
-    <button type="submit">Log in</button>
-  </form>
-  <p class="error" id="login-error" hidden></p>
+  <div class="login-brand">
+    <div class="login-logo">KB4</div>
+    <h1>KnowBe4</h1>
+    <p>A fast, accurate picture of every student &mdash; without teachers writing, giving, or grading a single assessment.</p>
+    <ul>
+      <li>Manage classes and student rosters</li>
+      <li>One-time PINs for student login</li>
+      <li>Autonomous skill assessments, graded for you</li>
+    </ul>
+  </div>
+  <div class="login-form-panel">
+    <div class="login-card">
+      <div class="login-tabs" role="tablist">
+        <button type="button" class="login-tab active" id="tab-teacher" role="tab" aria-selected="true">Teacher</button>
+        <button type="button" class="login-tab" id="tab-student" role="tab" aria-selected="false">Student</button>
+      </div>
+
+      <div id="teacher-login-pane">
+        <h1>Teacher sign in</h1>
+        <p class="login-subtitle">Access your classes and student rosters</p>
+        <form id="login-form">
+          <div class="field">
+            <label for="login-email">Email</label>
+            <input type="email" id="login-email" placeholder="you@school.example" required />
+          </div>
+          <div class="field">
+            <label for="login-password">Password</label>
+            <input type="password" id="login-password" placeholder="Password" required />
+          </div>
+          <button type="submit">Sign in</button>
+        </form>
+        <p class="error" id="login-error" hidden></p>
+      </div>
+
+      <div id="student-login-pane" hidden>
+        <h1>Student sign in</h1>
+        <p class="login-subtitle">Use the Student ID and PIN your teacher gave you</p>
+        <form id="student-login-form">
+          <div class="field">
+            <label for="student-login-id">Student ID</label>
+            <input type="number" id="student-login-id" placeholder="e.g. 12" required />
+          </div>
+          <div class="field">
+            <label for="student-login-pin">PIN</label>
+            <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="4" id="student-login-pin" placeholder="4-digit PIN" required />
+          </div>
+          <button type="submit">Sign in</button>
+        </form>
+        <p class="error" id="student-login-error" hidden></p>
+      </div>
+    </div>
+  </div>
 </section>
 
 <section id="classes-view" hidden>
@@ -39,11 +460,11 @@
 </section>
 
 <section id="roster-view" hidden>
-  <button class="back" id="back-to-classes">&larr; Back to classes</button>
+  <button type="button" class="back" id="back-to-classes">&larr; Back to classes</button>
   <h1 id="roster-title"></h1>
   <div id="pin-banner" class="pin-banner" hidden>
     <span id="pin-banner-text"></span>
-    <button id="pin-banner-dismiss">&times;</button>
+    <button type="button" id="pin-banner-dismiss">&times;</button>
   </div>
   <ul id="roster-list"></ul>
 
@@ -56,6 +477,28 @@
   <p class="error" id="roster-error" hidden></p>
 </section>
 
+<section id="student-view" hidden>
+  <div class="student-shell">
+    <div class="student-topbar">
+      <div>
+        <p class="student-eyebrow">Welcome back</p>
+        <h1 id="student-greeting"></h1>
+        <p id="student-grade-label"></p>
+      </div>
+      <button type="button" class="student-logout" id="student-logout">Sign out</button>
+    </div>
+
+    <p class="error" id="student-error" hidden></p>
+
+    <div id="student-empty" class="student-empty" hidden>
+      <h2>You're all caught up</h2>
+      <p>No questions waiting right now &mdash; check back soon.</p>
+    </div>
+
+    <div id="student-questions"></div>
+  </div>
+</section>
+
 <script>
   let token = null;
   let currentClassId = null;
@@ -64,6 +507,7 @@
     login: document.getElementById("login-view"),
     classes: document.getElementById("classes-view"),
     roster: document.getElementById("roster-view"),
+    student: document.getElementById("student-view"),
   };
 
   function showView(name) {
@@ -194,6 +638,137 @@
 
   document.getElementById("pin-banner-dismiss").addEventListener("click", () => {
     document.getElementById("pin-banner").hidden = true;
+  });
+
+  document.getElementById("tab-teacher").addEventListener("click", () => setLoginTab("teacher"));
+  document.getElementById("tab-student").addEventListener("click", () => setLoginTab("student"));
+
+  function setLoginTab(which) {
+    document.getElementById("tab-teacher").classList.toggle("active", which === "teacher");
+    document.getElementById("tab-student").classList.toggle("active", which === "student");
+    document.getElementById("tab-teacher").setAttribute("aria-selected", which === "teacher");
+    document.getElementById("tab-student").setAttribute("aria-selected", which === "student");
+    document.getElementById("teacher-login-pane").hidden = which !== "teacher";
+    document.getElementById("student-login-pane").hidden = which !== "student";
+  }
+
+  document.getElementById("student-login-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    clearError("student-login-error");
+    const studentId = Number(document.getElementById("student-login-id").value);
+    const pin = document.getElementById("student-login-pin").value;
+    try {
+      const result = await api("/auth/student/login", {
+        method: "POST",
+        body: JSON.stringify({ student_id: studentId, pin }),
+      });
+      token = result.access_token;
+      await loadStudentDashboard();
+      showView("student");
+    } catch (err) {
+      showError("student-login-error", err.message);
+    }
+  });
+
+  async function loadStudentDashboard() {
+    clearError("student-error");
+    try {
+      const me = await api("/auth/student/me");
+      document.getElementById("student-greeting").textContent = `Hi, ${me.full_name}!`;
+      document.getElementById("student-grade-label").textContent = `Grade ${me.grade_level}`;
+      const pending = await api("/auth/student/assessments/pending");
+      renderStudentQuestions(pending);
+    } catch (err) {
+      showError("student-error", err.message);
+    }
+  }
+
+  function renderStudentQuestions(items) {
+    const container = document.getElementById("student-questions");
+    const empty = document.getElementById("student-empty");
+    container.innerHTML = "";
+    if (items.length === 0) {
+      empty.hidden = false;
+      return;
+    }
+    empty.hidden = true;
+    for (const item of items) {
+      container.appendChild(buildMissionCard(item));
+    }
+  }
+
+  function buildMissionCard(item) {
+    const card = document.createElement("div");
+    card.className = "mission-card";
+
+    const badge = document.createElement("span");
+    badge.className = "mission-badge";
+    badge.textContent = "Question";
+    card.appendChild(badge);
+
+    const question = document.createElement("p");
+    question.className = "mission-question";
+    question.textContent = item.question_text;
+    card.appendChild(question);
+
+    const form = document.createElement("form");
+    form.className = "mission-answer-form";
+    const input = document.createElement("input");
+    input.type = "text";
+    input.placeholder = "Type your answer";
+    input.required = true;
+    const submitButton = document.createElement("button");
+    submitButton.type = "submit";
+    submitButton.textContent = "Submit answer";
+    form.appendChild(input);
+    form.appendChild(submitButton);
+    card.appendChild(form);
+
+    const error = document.createElement("p");
+    error.className = "error";
+    error.hidden = true;
+    card.appendChild(error);
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      error.hidden = true;
+      submitButton.disabled = true;
+      submitButton.textContent = "Submitting...";
+      try {
+        const graded = await api(`/assessments/${item.id}/answer`, {
+          method: "POST",
+          body: JSON.stringify({ answer: input.value }),
+        });
+        form.remove();
+        badge.textContent = "Completed";
+        card.classList.add("is-done");
+
+        const result = document.createElement("div");
+        result.className = "mission-result";
+        const score = document.createElement("p");
+        score.className = "mission-score";
+        score.textContent = `${graded.score}/100`;
+        const feedback = document.createElement("p");
+        feedback.className = "mission-feedback";
+        feedback.textContent = graded.feedback;
+        result.appendChild(score);
+        result.appendChild(feedback);
+        card.appendChild(result);
+      } catch (err) {
+        error.textContent = err.message;
+        error.hidden = false;
+        submitButton.disabled = false;
+        submitButton.textContent = "Submit answer";
+      }
+    });
+
+    return card;
+  }
+
+  document.getElementById("student-logout").addEventListener("click", () => {
+    token = null;
+    document.getElementById("student-login-form").reset();
+    showView("login");
   });
 </script>
 

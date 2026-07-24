@@ -46,7 +46,12 @@ def generate_assessment(
         raise HTTPException(status_code=500, detail="math_reasoning skill dimension not seeded")
 
     try:
-        generated = gemini_client.generate_math_question(student.grade_level)
+        generated = gemini_client.generate_question(
+            dimension_key=dimension.key,
+            dimension_name=dimension.name,
+            rubric_description=dimension.rubric_description,
+            grade_level=student.grade_level,
+        )
     except GeminiError:
         raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail="Question generation failed")
 

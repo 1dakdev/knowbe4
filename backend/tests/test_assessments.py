@@ -37,8 +37,11 @@ def _setup_class_with_student(client, db_session, email="assess@riverside.exampl
 
 def _stub_generate(monkeypatch, question_text="What is 2 + 2?", correct_answer="4"):
     monkeypatch.setattr(
-        "app.routers.assessments.gemini_client.generate_math_question",
-        lambda grade_level: {"question_text": question_text, "correct_answer": correct_answer},
+        "app.routers.assessments.gemini_client.generate_question",
+        lambda dimension_key, dimension_name, rubric_description, grade_level: {
+            "question_text": question_text,
+            "correct_answer": correct_answer,
+        },
     )
 
 
@@ -80,10 +83,10 @@ def test_generate_assessment_returns_502_on_gemini_failure(client, db_session, m
 
     from app.llm.gemini import GeminiError
 
-    def _raise(grade_level):
+    def _raise(dimension_key, dimension_name, rubric_description, grade_level):
         raise GeminiError("boom")
 
-    monkeypatch.setattr("app.routers.assessments.gemini_client.generate_math_question", _raise)
+    monkeypatch.setattr("app.routers.assessments.gemini_client.generate_question", _raise)
 
     response = client.post(f"/classes/{class_id}/students/{student_id}/assessments", headers=headers)
 
