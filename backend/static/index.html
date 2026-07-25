@@ -543,24 +543,130 @@
     gap: 40px;
   }
 
-  .roster-section {
+  .class-dashboard {
+    max-width: 1400px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 40px 40px 50px;
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+  }
+
+  .dashboard-header {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .dashboard-header h1 {
+    font-size: 2rem;
+    font-weight: 900;
+    margin: 0;
+    color: #1a1a1a;
+  }
+
+  .dashboard-card {
     background: #fff;
     border-radius: 12px;
     padding: 32px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   }
 
-  .roster-section h3 {
-    font-size: 1.1rem;
+  .dashboard-card h2 {
+    font-size: 1.25rem;
     font-weight: 700;
     margin: 0 0 8px;
     color: #1a1a1a;
   }
 
-  .roster-section > p {
+  .card-subtitle {
+    color: #999;
+    font-size: 0.9rem;
+    margin: 0 0 24px;
+  }
+
+  .dashboard-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 32px;
+  }
+
+  .flex-2 { flex: 2; }
+  .flex-1 { flex: 1; }
+
+  .status-grid {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 16px;
+  }
+
+  .status-item {
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .status-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  .status-item.on-track {
+    background: #ecfdf5;
+    border: 2px solid #10b981;
+  }
+
+  .status-item.needs-attention {
+    background: #fefce8;
+    border: 2px solid #eab308;
+  }
+
+  .status-item.at-risk {
+    background: #fef2f2;
+    border: 2px solid #ef4444;
+  }
+
+  .status-item-name {
+    font-weight: 700;
+    color: #1a1a1a;
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  .status-item-score {
+    font-size: 0.85rem;
+    color: #666;
+  }
+
+  .guidance-groups {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .guidance-group {
+    padding: 16px;
+    border-left: 4px solid #10b981;
+    background: #f0fdf4;
+    border-radius: 4px;
+  }
+
+  .guidance-group-title {
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 0 0 8px;
+  }
+
+  .guidance-group-text {
     color: #666;
     font-size: 0.9rem;
-    margin: 0 0 16px;
+    margin: 0;
   }
 
   .assess-panel {
@@ -586,7 +692,7 @@
     box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
   }
 
-  .student-grid {
+  .profile-list {
     list-style: none;
     padding: 0;
     margin: 0;
@@ -595,57 +701,67 @@
     gap: 12px;
   }
 
-  .roster-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 16px;
+  .profile-item {
     padding: 16px;
     border-radius: 8px;
     border: 1px solid #e5e7eb;
-    background: #f9f9f9;
+    background: #fafbfc;
+    cursor: pointer;
     transition: all 0.3s ease;
   }
 
-  .roster-item:hover {
+  .profile-item:hover {
     border-color: #10b981;
     background: #fff;
     box-shadow: 0 4px 12px rgba(16, 185, 129, 0.1);
   }
 
-  .roster-item-left {
-    cursor: pointer;
-    flex: 1;
-  }
-
-  .roster-item span:first-child {
+  .profile-item-name {
     font-weight: 700;
     color: #1a1a1a;
     display: block;
+    margin-bottom: 4px;
   }
 
-  .roster-item span:nth-child(2) {
+  .profile-item-detail {
     color: #999;
     font-size: 0.85rem;
     display: block;
-    margin-top: 2px;
   }
 
-  .roster-item button {
-    flex-shrink: 0;
-    padding: 8px 16px;
-    font-size: 0.9rem;
-    font-weight: 600;
-    background: #10b981;
-    color: #fff;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: all 0.2s ease;
+  .intervention-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
   }
 
-  .roster-item button:hover {
-    background: #059669;
+  .intervention-item {
+    padding: 14px;
+    border-radius: 8px;
+    background: #fef2f2;
+    border-left: 4px solid #ef4444;
+  }
+
+  .intervention-item-name {
+    font-weight: 700;
+    color: #1a1a1a;
+    font-size: 0.95rem;
+    margin: 0;
+  }
+
+  .intervention-item-reason {
+    color: #999;
+    font-size: 0.85rem;
+    margin: 4px 0 0;
+  }
+
+  .add-student-form {
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+    gap: 12px;
   }
 
   .add-student-section {
@@ -898,39 +1014,52 @@
     <button type="button" id="teacher-logout-roster" class="logout-btn">Sign out</button>
   </div>
 
-  <div class="roster-header">
-    <button type="button" class="back-link" id="back-to-classes">&larr; Back to classes</button>
-    <h1 id="roster-title"></h1>
-  </div>
-
-  <div class="roster-content">
-    <div class="roster-section">
-      <div class="assess-panel">
-        <h3>Assess Students</h3>
-        <p>Select a subject to assess students</p>
-        <select id="subject-select" class="subject-dropdown">
-          <option value="">Select a subject...</option>
-          <option value="math">Mathematics</option>
-          <option value="english">English Language Arts</option>
-          <option value="science">Science</option>
-          <option value="social-studies">Social Studies</option>
-          <option value="reading">Reading Comprehension</option>
-          <option value="writing">Writing</option>
-          <option value="critical-thinking">Critical Thinking</option>
-        </select>
-      </div>
-
-      <div id="pin-banner" class="pin-banner" hidden>
-        <span id="pin-banner-text"></span>
-        <button type="button" id="pin-banner-dismiss">&times;</button>
-      </div>
-
-      <ul id="roster-list" class="student-grid"></ul>
+  <div class="class-dashboard">
+    <div class="dashboard-header">
+      <button type="button" class="back-link" id="back-to-classes">&larr; Back to classes</button>
+      <h1 id="roster-title"></h1>
     </div>
 
-    <div class="roster-section add-student-section">
-      <h3>Add Student to Class</h3>
-      <form id="add-student-form">
+    <div id="pin-banner" class="pin-banner" hidden>
+      <span id="pin-banner-text"></span>
+      <button type="button" id="pin-banner-dismiss">&times;</button>
+    </div>
+
+    <!-- Student Status Overview -->
+    <div class="dashboard-card">
+      <h2>Student Status</h2>
+      <p class="card-subtitle">Quick view of student progress</p>
+      <ul id="student-status-grid" class="status-grid"></ul>
+    </div>
+
+    <!-- AI Teaching Guidance -->
+    <div class="dashboard-card">
+      <h2>Today's Lesson Guidance</h2>
+      <p class="card-subtitle">AI-powered insights for your class</p>
+      <div id="teaching-guidance" class="guidance-groups"></div>
+    </div>
+
+    <!-- Student Details & Intervention -->
+    <div class="dashboard-row">
+      <!-- Individual Profiles -->
+      <div class="dashboard-card flex-2">
+        <h2>Student Profiles</h2>
+        <p class="card-subtitle">Click any student for details</p>
+        <ul id="roster-list" class="profile-list"></ul>
+      </div>
+
+      <!-- Intervention Alert -->
+      <div class="dashboard-card flex-1">
+        <h2>⚠️ Needs Intervention</h2>
+        <p class="card-subtitle">Prioritize these students</p>
+        <ul id="intervention-list" class="intervention-list"></ul>
+      </div>
+    </div>
+
+    <!-- Add Student -->
+    <div class="dashboard-card">
+      <h2>Add Student to Class</h2>
+      <form id="add-student-form" class="add-student-form">
         <input type="text" id="student-name" placeholder="Full name" required />
         <input type="number" id="student-grade" placeholder="Grade level" required />
         <button type="submit" class="btn-primary">Add student</button>
