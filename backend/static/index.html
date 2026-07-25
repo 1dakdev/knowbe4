@@ -498,22 +498,183 @@
   }
 
   #roster-view {
-    max-width: 900px;
+    min-height: 100vh;
+    background: #f8f9fa;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .roster-header {
+    max-width: 1400px;
+    width: 100%;
     margin: 0 auto;
-    padding: 40px 24px;
+    padding: 40px 40px 20px;
+  }
+
+  .back-link {
+    color: #10b981;
+    font-size: 0.95rem;
+    font-weight: 600;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    margin-bottom: 16px;
+  }
+
+  .back-link:hover {
+    color: #059669;
+  }
+
+  .roster-header h1 {
+    font-size: 2rem;
+    font-weight: 900;
+    margin: 0;
+    color: #1a1a1a;
+  }
+
+  .roster-content {
+    max-width: 1400px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 0 40px 50px;
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 40px;
+  }
+
+  .roster-section {
+    background: #fff;
+    border-radius: 12px;
+    padding: 32px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  }
+
+  .roster-section h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin: 0 0 8px;
+    color: #1a1a1a;
+  }
+
+  .roster-section > p {
+    color: #666;
+    font-size: 0.9rem;
+    margin: 0 0 16px;
+  }
+
+  .assess-panel {
+    margin-bottom: 32px;
+    padding-bottom: 32px;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  .subject-dropdown {
+    width: 100%;
+    padding: 12px 14px;
+    font-size: 1rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    background: #fff;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .subject-dropdown:focus {
+    outline: none;
+    border-color: #10b981;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+  }
+
+  .student-grid {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
   }
 
   .roster-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    cursor: default;
+    gap: 16px;
+    padding: 16px;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+    background: #f9f9f9;
+    transition: all 0.3s ease;
+  }
+
+  .roster-item:hover {
+    border-color: #10b981;
+    background: #fff;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.1);
+  }
+
+  .roster-item-left {
+    cursor: pointer;
+    flex: 1;
+  }
+
+  .roster-item span:first-child {
+    font-weight: 700;
+    color: #1a1a1a;
+    display: block;
+  }
+
+  .roster-item span:nth-child(2) {
+    color: #999;
+    font-size: 0.85rem;
+    display: block;
+    margin-top: 2px;
+  }
+
+  .roster-item button {
+    flex-shrink: 0;
+    padding: 8px 16px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    background: #10b981;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .roster-item button:hover {
+    background: #059669;
+  }
+
+  .add-student-section {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .add-student-section form {
+    display: flex;
+    flex-direction: column;
     gap: 12px;
   }
-  .roster-item:hover { border-color: var(--border); box-shadow: none; }
-  .roster-item span:first-child { font-weight: 600; }
-  .roster-item span:nth-child(2) { color: var(--text-dim); font-size: 0.85rem; }
-  .roster-item button { flex-shrink: 0; }
+
+  .btn-primary {
+    padding: 12px 16px;
+    font-size: 1rem;
+    font-weight: 700;
+    background: #10b981;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .btn-primary:hover {
+    background: #059669;
+    transform: translateY(-2px);
+  }
 
   .pin-banner {
     background: #fffbeb;
@@ -729,20 +890,54 @@
 </section>
 
 <section id="roster-view" hidden>
-  <button type="button" class="back" id="back-to-classes">&larr; Back to classes</button>
-  <h1 id="roster-title"></h1>
-  <div id="pin-banner" class="pin-banner" hidden>
-    <span id="pin-banner-text"></span>
-    <button type="button" id="pin-banner-dismiss">&times;</button>
+  <div class="dashboard-nav">
+    <div class="dashboard-nav-left">
+      <div class="dashboard-logo">KB4</div>
+      <h2 class="dashboard-title">KnowBe4</h2>
+    </div>
+    <button type="button" id="teacher-logout-roster" class="logout-btn">Sign out</button>
   </div>
-  <ul id="roster-list"></ul>
 
-  <h2>Add student</h2>
-  <form id="add-student-form">
-    <input type="text" id="student-name" placeholder="Full name" required />
-    <input type="number" id="student-grade" placeholder="Grade level" required />
-    <button type="submit">Add student</button>
-  </form>
+  <div class="roster-header">
+    <button type="button" class="back-link" id="back-to-classes">&larr; Back to classes</button>
+    <h1 id="roster-title"></h1>
+  </div>
+
+  <div class="roster-content">
+    <div class="roster-section">
+      <div class="assess-panel">
+        <h3>Assess Students</h3>
+        <p>Select a subject to assess students</p>
+        <select id="subject-select" class="subject-dropdown">
+          <option value="">Select a subject...</option>
+          <option value="math">Mathematics</option>
+          <option value="english">English Language Arts</option>
+          <option value="science">Science</option>
+          <option value="social-studies">Social Studies</option>
+          <option value="reading">Reading Comprehension</option>
+          <option value="writing">Writing</option>
+          <option value="critical-thinking">Critical Thinking</option>
+        </select>
+      </div>
+
+      <div id="pin-banner" class="pin-banner" hidden>
+        <span id="pin-banner-text"></span>
+        <button type="button" id="pin-banner-dismiss">&times;</button>
+      </div>
+
+      <ul id="roster-list" class="student-grid"></ul>
+    </div>
+
+    <div class="roster-section add-student-section">
+      <h3>Add Student to Class</h3>
+      <form id="add-student-form">
+        <input type="text" id="student-name" placeholder="Full name" required />
+        <input type="number" id="student-grade" placeholder="Grade level" required />
+        <button type="submit" class="btn-primary">Add student</button>
+      </form>
+    </div>
+  </div>
+
   <p class="error" id="roster-error" hidden></p>
 </section>
 
@@ -876,19 +1071,28 @@
     clearError("roster-error");
     try {
       const roster = await api(`/classes/${classId}`);
-      document.getElementById("roster-title").textContent = `${roster.name} (grade ${roster.grade_level})`;
+      document.getElementById("roster-title").textContent = roster.name;
       const list = document.getElementById("roster-list");
       list.innerHTML = "";
+
       for (const student of roster.students) {
         const item = document.createElement("li");
         item.className = "roster-item";
 
+        // Left side with student name (clickable for profile)
+        const leftDiv = document.createElement("div");
+        leftDiv.className = "roster-item-left";
+        leftDiv.addEventListener("click", () => openProfile(classId, student.id, student.full_name));
+
         const nameSpan = document.createElement("span");
-        nameSpan.style.cursor = "pointer";
-        nameSpan.style.fontWeight = "600";
-        nameSpan.textContent = `${student.full_name} (grade ${student.grade_level})`;
-        nameSpan.addEventListener("click", () => openProfile(classId, student.id, student.full_name));
-        item.appendChild(nameSpan);
+        nameSpan.textContent = student.full_name;
+        leftDiv.appendChild(nameSpan);
+
+        const gradeSpan = document.createElement("span");
+        gradeSpan.textContent = `Grade ${student.grade_level}`;
+        leftDiv.appendChild(gradeSpan);
+
+        item.appendChild(leftDiv);
 
         const scoreSpan = document.createElement("span");
         scoreSpan.style.color = "var(--text-dim)";
