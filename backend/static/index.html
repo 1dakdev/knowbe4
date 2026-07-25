@@ -544,10 +544,10 @@
   }
 
   .class-dashboard {
-    max-width: 1400px;
+    max-width: 100%;
     width: 100%;
     margin: 0 auto;
-    padding: 40px 40px 50px;
+    padding: 40px;
     display: flex;
     flex-direction: column;
     gap: 32px;
@@ -590,6 +590,13 @@
     display: grid;
     grid-template-columns: 2fr 1fr;
     gap: 32px;
+    min-height: 400px;
+  }
+
+  @media (max-width: 1200px) {
+    .dashboard-row {
+      grid-template-columns: 1fr;
+    }
   }
 
   .flex-2 { flex: 2; }
@@ -600,12 +607,29 @@
     padding: 0;
     margin: 0;
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-    gap: 16px;
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    gap: 12px;
+    max-height: 280px;
+    overflow-y: auto;
+    padding-right: 8px;
+  }
+
+  .status-grid::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .status-grid::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+  }
+
+  .status-grid::-webkit-scrollbar-thumb {
+    background: #d0d0d0;
+    border-radius: 3px;
   }
 
   .status-item {
-    padding: 20px;
+    padding: 14px;
     border-radius: 8px;
     text-align: center;
     cursor: pointer;
@@ -613,8 +637,8 @@
   }
 
   .status-item:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   }
 
   .status-item.on-track {
@@ -633,14 +657,15 @@
   }
 
   .status-item-name {
-    font-weight: 700;
+    font-weight: 600;
     color: #1a1a1a;
     display: block;
-    margin-bottom: 4px;
+    margin-bottom: 2px;
+    font-size: 0.85rem;
   }
 
   .status-item-score {
-    font-size: 0.85rem;
+    font-size: 0.75rem;
     color: #666;
   }
 
@@ -692,13 +717,48 @@
     box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
   }
 
+  .profile-search {
+    margin-bottom: 16px;
+  }
+
+  .profile-search input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 0.9rem;
+  }
+
+  .profile-search input:focus {
+    outline: none;
+    border-color: #10b981;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+  }
+
   .profile-list {
     list-style: none;
     padding: 0;
     margin: 0;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
+    max-height: 350px;
+    overflow-y: auto;
+    padding-right: 8px;
+  }
+
+  .profile-list::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .profile-list::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+  }
+
+  .profile-list::-webkit-scrollbar-thumb {
+    background: #d0d0d0;
+    border-radius: 3px;
   }
 
   .profile-item {
@@ -735,7 +795,24 @@
     margin: 0;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
+    max-height: 350px;
+    overflow-y: auto;
+    padding-right: 8px;
+  }
+
+  .intervention-list::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .intervention-list::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+  }
+
+  .intervention-list::-webkit-scrollbar-thumb {
+    background: #d0d0d0;
+    border-radius: 3px;
   }
 
   .intervention-item {
@@ -1045,6 +1122,9 @@
       <div class="dashboard-card flex-2">
         <h2>Student Profiles</h2>
         <p class="card-subtitle">Click any student for details</p>
+        <div class="profile-search">
+          <input type="text" id="profile-search" placeholder="Search students..." />
+        </div>
         <ul id="roster-list" class="profile-list"></ul>
       </div>
 
