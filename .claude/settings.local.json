@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git commit -m 'fix: implement core functionality - dashboard now fully working *)"
+    ]
+  }
+}
