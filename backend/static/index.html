@@ -25,9 +25,18 @@
     min-height: 100vh;
     color: var(--text);
     background: var(--bg);
+    overflow-x: hidden;
   }
 
-  section { padding: 24px 16px; }
+  section {
+    padding: 24px 16px;
+  }
+
+  section[hidden] {
+    display: none !important;
+    height: 0;
+    overflow: hidden;
+  }
 
   h1 { font-size: 1.3rem; font-weight: 600; margin: 0 0 4px; }
   h2 { font-size: 0.95rem; font-weight: 600; margin: 24px 0 12px; color: var(--text-dim); }
@@ -337,6 +346,8 @@
     min-height: 100vh;
     background: linear-gradient(135deg, #f8f9fa 0%, #f0f1f3 100%);
     padding: 40px 24px;
+    display: flex;
+    flex-direction: column;
   }
 
   .classes-header {
@@ -723,6 +734,7 @@
 
   function showView(name) {
     for (const key in views) views[key].hidden = key !== name;
+    window.scrollTo(0, 0);
   }
 
   function showError(elementId, message) {
