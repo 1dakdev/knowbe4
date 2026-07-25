@@ -344,24 +344,59 @@
   /* --- Classes / roster --- */
   #classes-view {
     min-height: 100vh;
-    background: linear-gradient(135deg, #f8f9fa 0%, #f0f1f3 100%);
-    padding: 40px 24px;
+    background: #f8f9fa;
     display: flex;
     flex-direction: column;
+  }
+
+  .dashboard-nav {
+    background: #fff;
+    border-bottom: 1px solid #e5e7eb;
+    padding: 16px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  }
+
+  .dashboard-nav-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .dashboard-logo {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-weight: 800;
+    font-size: 0.9rem;
+  }
+
+  .dashboard-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 0;
   }
 
   .classes-header {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    margin-bottom: 50px;
-    max-width: 1200px;
-    margin-left: auto;
-    margin-right: auto;
+    align-items: flex-start;
+    max-width: 1400px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 50px 40px 40px;
   }
 
   .classes-header h1 {
-    font-size: 2.4rem;
+    font-size: 2.2rem;
     font-weight: 900;
     margin: 0 0 8px;
     color: #1a1a1a;
@@ -376,8 +411,8 @@
   }
 
   .logout-btn {
-    padding: 12px 24px;
-    font-size: 0.95rem;
+    padding: 10px 20px;
+    font-size: 0.9rem;
     font-weight: 600;
     background: #fff;
     border: 2px solid #e5e7eb;
@@ -394,43 +429,64 @@
   }
 
   #classes-container {
-    max-width: 1200px;
+    max-width: 1400px;
+    width: 100%;
     margin: 0 auto;
+    padding: 0 40px 50px;
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 24px;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 28px;
+    flex: 1;
   }
 
   ul { list-style: none; padding: 0; margin: 0; }
 
   #classes-list li {
-    padding: 32px;
-    border-radius: 16px;
+    padding: 28px;
+    border-radius: 12px;
     background: #fff;
-    border: 2px solid #e5e7eb;
+    border: 1px solid #e5e7eb;
     cursor: pointer;
     transition: all 0.3s ease;
     display: flex;
     flex-direction: column;
     gap: 16px;
-    min-height: 200px;
+    min-height: 220px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    position: relative;
+    overflow: hidden;
+  }
+
+  #classes-list li::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
   }
 
   #classes-list li:hover {
-    border-color: #10b981;
-    box-shadow: 0 12px 24px rgba(16, 185, 129, 0.15);
-    transform: translateY(-6px);
+    border-color: #e5e7eb;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+    transform: translateY(-4px);
+  }
+
+  #classes-list li:hover::after {
+    opacity: 1;
   }
 
   #classes-list li::before {
     content: "📚";
-    font-size: 2.5rem;
+    font-size: 2.8rem;
     display: block;
   }
 
   #classes-list li strong {
-    font-size: 1.3rem;
+    font-size: 1.25rem;
     font-weight: 800;
     color: #1a1a1a;
   }
@@ -653,12 +709,18 @@
 </section>
 
 <section id="classes-view" hidden>
+  <div class="dashboard-nav">
+    <div class="dashboard-nav-left">
+      <div class="dashboard-logo">KB4</div>
+      <h2 class="dashboard-title">KnowBe4</h2>
+    </div>
+    <button type="button" id="teacher-logout" class="logout-btn">Sign out</button>
+  </div>
   <div class="classes-header">
     <div>
       <h1>Your Classes</h1>
       <p id="teacher-name" class="teacher-subtitle"></p>
     </div>
-    <button type="button" id="teacher-logout" class="logout-btn">Sign out</button>
   </div>
   <div id="classes-container">
     <ul id="classes-list"></ul>
