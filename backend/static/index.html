@@ -334,86 +334,100 @@
 
   /* --- Classes / roster --- */
   #classes-view {
-    max-width: 1000px;
-    margin: 0 auto;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #f8f9fa 0%, #f0f1f3 100%);
     padding: 40px 24px;
   }
 
   .classes-header {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 40px;
+    align-items: center;
+    margin-bottom: 50px;
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
   }
 
   .classes-header h1 {
-    font-size: 2rem;
-    font-weight: 800;
+    font-size: 2.4rem;
+    font-weight: 900;
     margin: 0 0 8px;
+    color: #1a1a1a;
+    letter-spacing: -0.02em;
   }
 
   .teacher-subtitle {
-    color: var(--text-dim);
-    font-size: 0.95rem;
+    color: #666;
+    font-size: 1rem;
     margin: 0;
+    font-weight: 500;
   }
 
   .logout-btn {
-    padding: 10px 16px;
-    font-size: 0.9rem;
+    padding: 12px 24px;
+    font-size: 0.95rem;
     font-weight: 600;
-    background: #f3f4f6;
-    border: 1px solid var(--border);
+    background: #fff;
+    border: 2px solid #e5e7eb;
     border-radius: 8px;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.3s ease;
+    color: #1a1a1a;
   }
 
   .logout-btn:hover {
-    background: #e5e7eb;
+    background: #f3f4f6;
     border-color: #d1d5db;
+    transform: translateY(-1px);
   }
 
   #classes-container {
+    max-width: 1200px;
+    margin: 0 auto;
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 24px;
   }
 
   ul { list-style: none; padding: 0; margin: 0; }
 
   #classes-list li {
-    padding: 24px;
-    border-radius: 12px;
-    background: var(--surface);
-    border: 2px solid var(--border);
+    padding: 32px;
+    border-radius: 16px;
+    background: #fff;
+    border: 2px solid #e5e7eb;
     cursor: pointer;
     transition: all 0.3s ease;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 16px;
+    min-height: 200px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   }
 
   #classes-list li:hover {
-    border-color: #6366f1;
-    box-shadow: 0 8px 16px rgba(99, 102, 241, 0.15);
-    transform: translateY(-4px);
+    border-color: #10b981;
+    box-shadow: 0 12px 24px rgba(16, 185, 129, 0.15);
+    transform: translateY(-6px);
   }
 
   #classes-list li::before {
     content: "📚";
-    font-size: 2rem;
+    font-size: 2.5rem;
+    display: block;
   }
 
   #classes-list li strong {
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: var(--text);
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: #1a1a1a;
   }
 
   #classes-list li span {
-    color: var(--text-dim);
-    font-size: 0.9rem;
+    color: #666;
+    font-size: 0.95rem;
+    font-weight: 500;
   }
 
   #roster-view {
