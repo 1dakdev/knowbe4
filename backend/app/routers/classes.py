@@ -169,6 +169,245 @@ def get_student_profile(
     return StudentProfileOut(summary=summary, dimensions=dimensions_out)
 
 
+@router.get("/classes/{class_id}/students/{student_id}/recommendations")
+def get_student_recommendations(
+    class_id: int,
+    student_id: int,
+    current_teacher: Teacher = Depends(get_current_teacher),
+    db: Session = Depends(get_db),
+):
+    school_class = _get_owned_class(class_id, current_teacher, db)
+    student = db.get(Student, student_id)
+    if student is None or student.class_id != school_class.id:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Student not found")
+
+    # Get student's latest assessment score
+    assessments = (
+        db.query(AssessmentItem)
+        .filter(AssessmentItem.student_id == student_id, AssessmentItem.answered_at.isnot(None))
+        .all()
+    )
+
+    if not assessments:
+        return {
+            "student_name": student.full_name,
+            "performance_level": "No assessments yet",
+            "score": None,
+            "strengths": ["Student is new to the platform"],
+            "areas_for_growth": ["Complete first assessment to identify learning needs"],
+            "teaching_strategies": [
+                "Introduce the student to the platform",
+                "Start with a diagnostic assessment",
+                "Build confidence with foundational concepts",
+            ],
+            "recommended_activities": [
+                "Guided practice with immediate feedback",
+                "Peer learning activities",
+                "One-on-one check-ins",
+            ],
+            "next_steps": ["Complete initial assessment", "Identify learning style preferences"],
+        }
+
+    avg_score = sum(a.score for a in assessments if a.score) / len([a for a in assessments if a.score])
+
+    if avg_score >= 85:
+        performance_level = "Advanced"
+        strengths = [
+            "Demonstrates strong conceptual understanding",
+            "Consistently provides detailed, thoughtful responses",
+            "Shows ability to apply knowledge to complex problems",
+        ]
+        areas_for_growth = [
+            "Challenge with extension activities",
+            "Encourage peer mentoring",
+            "Explore advanced topics",
+        ]
+        strategies = [
+            "Provide enrichment activities and advanced challenges",
+            "Encourage independent research projects",
+            "Have them mentor struggling classmates",
+            "Introduce accelerated content and real-world applications",
+        ]
+        activities = [
+            "Independent research projects",
+            "Peer tutoring leadership",
+            "Advanced problem-solving challenges",
+            "Creative application projects",
+        ]
+    elif avg_score >= 75:
+        performance_level = "Proficient"
+        strengths = [
+            "Solid understanding of core concepts",
+            "Demonstrates good effort and engagement",
+            "Can apply knowledge with guidance",
+        ]
+        areas_for_growth = [
+            "Build deeper understanding",
+            "Increase independent practice",
+            "Strengthen problem-solving skills",
+        ]
+        strategies = [
+            "Use scaffolded learning activities",
+            "Provide worked examples followed by guided practice",
+            "Use think-aloud strategies to model reasoning",
+            "Encourage self-reflection on learning",
+        ]
+        activities = [
+            "Guided practice worksheets",
+            "Collaborative problem-solving",
+            "Structured review sessions",
+            "Practice with real-world scenarios",
+        ]
+    elif avg_score >= 60:
+        performance_level = "Developing"
+        strengths = [
+            "Shows willingness to engage",
+            "Can grasp basic concepts with support",
+            "Improving with practice",
+        ]
+        areas_for_growth = [
+            "Strengthen foundational understanding",
+            "Increase practice frequency",
+            "Build confidence",
+            "Improve response depth",
+        ]
+        strategies = [
+            "Break concepts into smaller, manageable chunks",
+            "Use multi-sensory learning (visual, audio, kinesthetic)",
+            "Provide frequent, low-stakes practice",
+            "Use concrete examples and manipulatives",
+            "Offer regular feedback and encouragement",
+        ]
+        activities = [
+            "Daily short practice sessions",
+            "Hands-on learning activities",
+            "Small group instruction",
+            "Interactive games and simulations",
+            "Frequent low-stakes quizzes",
+        ]
+    else:
+        performance_level = "Beginning"
+        strengths = [
+            "Participating in the program",
+            "Showing effort on assignments",
+        ]
+        areas_for_growth = [
+            "Build fundamental understanding",
+            "Develop consistent engagement",
+            "Improve answer quality and length",
+            "Increase confidence",
+        ]
+        strategies = [
+            "Use intensive small-group instruction",
+            "Provide explicit, direct instruction",
+            "Scaffold heavily with models and examples",
+            "Use frequent, immediate feedback",
+            "Build connections to prior knowledge",
+            "Consider one-on-one tutoring support",
+        ]
+        activities = [
+            "One-on-one tutoring sessions",
+            "Intensive small-group work",
+            "Pre-teaching before whole-class lessons",
+            "Simplified practice with models",
+            "Motivational check-ins and encouragement",
+        ]
+
+    return {
+        "student_name": student.full_name,
+        "performance_level": performance_level,
+        "score": round(avg_score, 1),
+        "strengths": strengths,
+        "areas_for_growth": areas_for_growth,
+        "teaching_strategies": strategies,
+        "recommended_activities": activities,
+        "next_steps": [
+            f"Continue with {performance_level.lower()} level content",
+            "Monitor progress and adjust support as needed",
+            "Share insights with student",
+        ],
+    }
+
+
+@router.get("/classes/{class_id}/class-recommendations")
+def get_class_recommendations(
+    class_id: int,
+    current_teacher: Teacher = Depends(get_current_teacher),
+    db: Session = Depends(get_db),
+):
+    school_class = _get_owned_class(class_id, current_teacher, db)
+    students = db.query(Student).filter(Student.class_id == class_id).all()
+
+    if not students:
+        return {
+            "class_name": school_class.name,
+            "total_students": 0,
+            "recommendations": [],
+        }
+
+    # Calculate class statistics
+    scores = []
+    performance_tiers = {"Advanced": 0, "Proficient": 0, "Developing": 0, "Beginning": 0}
+
+    for student in students:
+        assessments = (
+            db.query(AssessmentItem)
+            .filter(AssessmentItem.student_id == student.id, AssessmentItem.answered_at.isnot(None))
+            .all()
+        )
+        if assessments:
+            avg = sum(a.score for a in assessments if a.score) / len([a for a in assessments if a.score])
+            scores.append(avg)
+            if avg >= 85:
+                performance_tiers["Advanced"] += 1
+            elif avg >= 75:
+                performance_tiers["Proficient"] += 1
+            elif avg >= 60:
+                performance_tiers["Developing"] += 1
+            else:
+                performance_tiers["Beginning"] += 1
+
+    class_avg = sum(scores) / len(scores) if scores else 0
+
+    if class_avg >= 80:
+        class_level = "Strong"
+        recommendations = [
+            "Provide enrichment and acceleration opportunities",
+            "Challenge advanced learners with extension projects",
+            "Use peer teaching to reinforce understanding",
+            "Introduce real-world applications and cross-curricular connections",
+            "Prepare accelerated students for higher-level content",
+        ]
+    elif class_avg >= 70:
+        class_level = "Solid"
+        recommendations = [
+            "Maintain current teaching approaches with some adjustments",
+            "Provide targeted support for students in Developing tier",
+            "Use collaborative learning to peer-support",
+            "Introduce slightly more challenging content for advanced students",
+            "Regular formative assessments to monitor progress",
+        ]
+    else:
+        class_level = "Needs Support"
+        recommendations = [
+            "Increase foundational skill instruction",
+            "Implement more frequent, structured practice",
+            "Use small-group instruction for struggling students",
+            "Provide more scaffolding and guided practice",
+            "Consider additional classroom support or intervention programs",
+            "Increase parent/guardian communication about student progress",
+        ]
+
+    return {
+        "class_name": school_class.name,
+        "class_level": class_level,
+        "total_students": len(students),
+        "average_score": round(class_avg, 1),
+        "performance_distribution": performance_tiers,
+        "class_recommendations": recommendations,
+    }
+
+
 @router.get("/classes/{class_id}/stats", response_model=ClassStatsOut)
 def get_class_stats(
     class_id: int,
