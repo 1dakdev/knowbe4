@@ -8,7 +8,9 @@
       "PowerShell(Get-Process python -ErrorAction SilentlyContinue)",
       "PowerShell(Stop-Process -Force -ErrorAction SilentlyContinue)",
       "Bash(curl -s http://localhost:8000/health)",
-      "Bash(git commit *)"
+      "Bash(git commit *)",
+      "Bash(git commit -m 'fix: move parental consent to enrollment, remove from teacher dashboard *)",
+      "Bash(git push *)"
     ]
   }
 }

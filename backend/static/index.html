@@ -1138,204 +1138,25 @@
   [hidden] { display: none; }
 
   /* --- Consent Modal --- */
-  .consent-modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-    padding: 20px;
+  .compliance-notice {
+    background: #f0fdf4;
+    border-left: 4px solid #10b981;
+    padding: 12px 16px;
+    margin-bottom: 20px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    color: #166534;
   }
 
-  .consent-modal-content {
-    background: #fff;
-    border-radius: 12px;
-    max-width: 600px;
-    width: 100%;
-    max-height: 80vh;
-    overflow-y: auto;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-  }
-
-  .consent-modal-header {
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-    color: #fff;
-    padding: 28px;
-    border-radius: 12px 12px 0 0;
-  }
-
-  .consent-modal-header h2 {
-    margin: 0;
-    font-size: 1.5rem;
-    color: #fff;
-  }
-
-  .consent-modal-body {
-    padding: 28px;
-  }
-
-  .consent-section {
-    margin-bottom: 24px;
-  }
-
-  .consent-section h3 {
-    font-size: 1.05rem;
-    font-weight: 700;
-    color: #1a1a1a;
-    margin: 0 0 12px;
-  }
-
-  .consent-section p {
-    margin: 0 0 12px;
-    color: #4b5563;
-    line-height: 1.6;
-    font-size: 0.95rem;
-  }
-
-  .consent-section ul {
-    margin: 12px 0;
-    padding-left: 20px;
-    color: #4b5563;
-    font-size: 0.95rem;
-  }
-
-  .consent-section li {
-    margin-bottom: 8px;
-    line-height: 1.5;
-  }
-
-  .consent-checkbox-container {
-    background: #f9fafb;
-    border: 2px solid #e5e7eb;
-    border-radius: 8px;
-    padding: 16px;
-    margin: 24px 0;
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-  }
-
-  .consent-checkbox-container input[type="checkbox"] {
-    margin-top: 4px;
-    cursor: pointer;
-    width: 20px;
-    height: 20px;
-  }
-
-  .consent-checkbox-label {
-    cursor: pointer;
-    font-size: 0.95rem;
-    color: #1a1a1a;
-    font-weight: 500;
-  }
-
-  .consent-modal-footer {
-    display: flex;
-    gap: 12px;
-    padding: 28px;
-    border-top: 1px solid #e5e7eb;
-    background: #f9fafb;
-    border-radius: 0 0 12px 12px;
-  }
-
-  .consent-modal-footer button {
-    flex: 1;
-    padding: 12px 20px;
-    font-size: 0.95rem;
+  .compliance-notice strong {
+    display: block;
+    margin-bottom: 4px;
     font-weight: 600;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-  }
-
-  .consent-modal-footer .btn-accept {
-    background: #10b981;
-    color: #fff;
-    border: none;
-  }
-
-  .consent-modal-footer .btn-accept:hover {
-    background: #059669;
-  }
-
-  .consent-modal-footer .btn-accept:disabled {
-    background: #9ca3af;
-    cursor: not-allowed;
-  }
-
-  .consent-modal-footer .btn-decline {
-    background: #f3f4f6;
-    color: #1f2937;
-    border: 1px solid #d1d5db;
-  }
-
-  .consent-modal-footer .btn-decline:hover {
-    background: #e5e7eb;
   }
 </style>
 </head>
 <body>
 
-<div id="consent-modal" class="consent-modal" hidden>
-  <div class="consent-modal-content">
-    <div class="consent-modal-header">
-      <h2>Parental Consent Required</h2>
-    </div>
-    <div class="consent-modal-body">
-      <div class="consent-section">
-        <h3>Important Notice for Parents and Guardians</h3>
-        <p>
-          KnowBe4 uses artificial intelligence (AI) technology to generate personalized assessments and provide learning insights for students. To use this platform, we require your consent for student data processing.
-        </p>
-      </div>
-
-      <div class="consent-section">
-        <h3>How Student Data is Used:</h3>
-        <ul>
-          <li><strong>Assessment Generation:</strong> AI generates grade-appropriate questions based on subject and topic</li>
-          <li><strong>Answer Grading:</strong> AI grades student responses and provides feedback</li>
-          <li><strong>Learning Insights:</strong> AI creates personalized student profiles summarizing strengths and areas for growth</li>
-          <li><strong>Data Processing:</strong> Student assessment data is processed by Google Gemini AI for these purposes</li>
-        </ul>
-      </div>
-
-      <div class="consent-section">
-        <h3>Data Protection:</h3>
-        <ul>
-          <li>All student data is treated securely and confidentially</li>
-          <li>Data is only used for educational assessment purposes</li>
-          <li>Parents/guardians can request data deletion at any time</li>
-          <li>This platform complies with FERPA and student privacy regulations</li>
-        </ul>
-      </div>
-
-      <div class="consent-section">
-        <h3>Your Consent:</h3>
-        <div class="consent-checkbox-container">
-          <input type="checkbox" id="consent-checkbox" />
-          <label for="consent-checkbox" class="consent-checkbox-label">
-            I certify that I am a parent or legal guardian and I consent to student data being processed by AI systems for educational assessment and personalized learning insights as described above.
-          </label>
-        </div>
-      </div>
-
-      <div class="consent-section" style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 16px; border-radius: 6px; margin: 20px 0;">
-        <p style="margin: 0; color: #92400e; font-weight: 500;">
-          ⚠️ By clicking "I Consent," you acknowledge that you have read and agree to allow student data to be processed by this platform's AI systems.
-        </p>
-      </div>
-    </div>
-    <div class="consent-modal-footer">
-      <button type="button" class="btn-decline" id="consent-decline">Decline</button>
-      <button type="button" class="btn-accept" id="consent-accept" disabled>I Consent</button>
-    </div>
-  </div>
-</div>
 
 <section id="login-view">
   <div class="login-header">
@@ -1386,6 +1207,11 @@
       <h1>Your Classes</h1>
       <p id="teacher-name" class="teacher-subtitle"></p>
     </div>
+  </div>
+
+  <div class="compliance-notice">
+    <strong>✓ Compliance Notice:</strong>
+    This platform uses AI (Google Gemini) for assessments. Parents/guardians have consented during enrollment. The platform complies with FERPA and student privacy regulations.
   </div>
   <div id="classes-container">
     <ul id="classes-list"></ul>
@@ -1538,26 +1364,6 @@
     profile: document.getElementById("profile-view"),
   };
 
-  function hasConsentedToAI() {
-    return localStorage.getItem("ai-consent-v1") === "true";
-  }
-
-  function setConsentToAI(value) {
-    if (value) {
-      localStorage.setItem("ai-consent-v1", "true");
-    } else {
-      localStorage.removeItem("ai-consent-v1");
-    }
-  }
-
-  function showConsentModal() {
-    document.getElementById("consent-modal").hidden = false;
-  }
-
-  function hideConsentModal() {
-    document.getElementById("consent-modal").hidden = true;
-  }
-
   function showView(name) {
     for (const key in views) views[key].hidden = key !== name;
     window.scrollTo(0, 0);
@@ -1597,39 +1403,13 @@
         body: JSON.stringify({ email, password }),
       });
       token = result.access_token;
-
-      if (!hasConsentedToAI()) {
-        showConsentModal();
-      } else {
-        await loadClasses();
-        showView("classes");
-      }
+      await loadClasses();
+      showView("classes");
     } catch (err) {
       showError("login-error", err.message);
     }
   });
 
-  document.getElementById("consent-checkbox").addEventListener("change", (e) => {
-    document.getElementById("consent-accept").disabled = !e.target.checked;
-  });
-
-  document.getElementById("consent-accept").addEventListener("click", async () => {
-    setConsentToAI(true);
-    hideConsentModal();
-    await loadClasses();
-    showView("classes");
-  });
-
-  document.getElementById("consent-decline").addEventListener("click", () => {
-    token = null;
-    document.getElementById("login-email").value = "";
-    document.getElementById("login-password").value = "";
-    document.getElementById("consent-checkbox").checked = false;
-    document.getElementById("consent-accept").disabled = true;
-    hideConsentModal();
-    showView("login");
-    showError("login-error", "Consent is required to use this platform.");
-  });
 
   async function loadClasses() {
     clearError("classes-error");
