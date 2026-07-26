@@ -1093,13 +1093,148 @@
   .mission-feedback { color: var(--text-dim); margin: 0; font-size: 0.92rem; line-height: 1.5; }
 
   /* --- Profile view --- */
-  #profile-view { max-width: 480px; margin: 0 auto; padding: 24px 16px; }
-  #profile-summary { background: #f9f5f0; padding: 16px; border-radius: 12px; margin: 20px 0; font-size: 0.95rem; line-height: 1.6; color: #5f5f5f; }
-  #profile-dimensions { list-style: none; padding: 0; margin: 0; }
-  #profile-dimensions li { padding: 12px 16px; margin-bottom: 8px; border-radius: 8px; background: #fff; border: 1px solid var(--border); }
-  #profile-dimensions li.unavailable { opacity: 0.5; }
-  #profile-dimensions li span:last-child { color: var(--text-dim); font-size: 0.85rem; }
-  #assess-full-profile-btn { width: 100%; margin-top: 20px; }
+  #profile-view { max-width: 540px; margin: 0 auto; padding: 24px 16px 80px; }
+
+  .profile-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 28px;
+  }
+
+  .profile-header h1 {
+    margin: 0;
+    font-size: 1.8rem;
+    color: #1a1a1a;
+  }
+
+  .profile-back {
+    color: #2563eb;
+    text-decoration: none;
+    font-size: 0.95rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 16px;
+  }
+
+  .profile-back:hover { text-decoration: underline; }
+
+  #profile-summary {
+    background: linear-gradient(135deg, #f0fdf4 0%, #ecf9f3 100%);
+    border-left: 4px solid #10b981;
+    padding: 16px;
+    border-radius: 8px;
+    margin: 20px 0;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: #166534;
+  }
+
+  #profile-dimensions-wrapper {
+    margin-top: 28px;
+  }
+
+  #profile-dimensions-wrapper h2 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 16px;
+  }
+
+  #profile-dimensions {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  #profile-dimensions li {
+    padding: 16px;
+    margin-bottom: 12px;
+    border-radius: 10px;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    transition: all 0.2s ease;
+  }
+
+  #profile-dimensions li:hover {
+    border-color: #10b981;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.1);
+  }
+
+  #profile-dimensions li > div:first-child {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+
+  #profile-dimensions li span:first-child {
+    font-weight: 600;
+    color: #1a1a1a;
+  }
+
+  #profile-dimensions li span:last-child {
+    color: var(--text-dim);
+    font-size: 0.9rem;
+    font-weight: 600;
+  }
+
+  #profile-dimensions li.unavailable { opacity: 0.6; }
+
+  #profile-dimensions li.unavailable span:last-child {
+    color: #9ca3af;
+    font-style: italic;
+  }
+
+  .dimension-feedback {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid #e5e7eb;
+    font-size: 0.85rem;
+    color: #6b7280;
+    line-height: 1.5;
+    font-style: italic;
+  }
+
+  .dimension-score {
+    display: inline-block;
+    background: #ecfdf5;
+    color: #10b981;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 700;
+    font-size: 0.9rem;
+  }
+
+  #assess-full-profile-btn {
+    width: 100%;
+    margin-top: 32px;
+    padding: 16px;
+    font-size: 1rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  #assess-full-profile-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
+  }
+
+  #assess-full-profile-btn:active {
+    transform: translateY(0);
+  }
+
+  #assess-full-profile-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
 
   #teaching-recommendations { background: #f0f9ff; border: 1px solid #bfdbfe; border-radius: 12px; padding: 24px; margin: 24px 0; }
   #teaching-recommendations h3 { color: #1e40af; margin: 0 0 20px; font-size: 1rem; }
@@ -1403,11 +1538,13 @@
 </section>
 
 <section id="profile-view" hidden>
-  <button type="button" class="back" id="back-to-roster">&larr; Back to roster</button>
-  <h1 id="profile-student-name"></h1>
+  <div class="profile-back" id="back-to-roster" style="cursor: pointer; display: inline-block;">&larr; Back to roster</div>
+  <div class="profile-header">
+    <h1 id="profile-student-name"></h1>
+  </div>
   <div id="profile-summary"></div>
   <div id="profile-dimensions-wrapper">
-    <h2>Assessment dimensions</h2>
+    <h2>Assessment Dimensions</h2>
     <ul id="profile-dimensions"></ul>
   </div>
 
@@ -2056,11 +2193,28 @@
         const li = document.createElement("li");
         if (!dim.available) {
           li.className = "unavailable";
-          li.innerHTML = `<span>${dim.name}</span><span>Not available yet</span>`;
+          li.innerHTML = `
+            <div>
+              <span>${dim.name}</span>
+              <span>Not available yet</span>
+            </div>
+          `;
         } else if (dim.latest_score === null) {
-          li.innerHTML = `<span>${dim.name}</span><span>Not yet assessed</span>`;
+          li.className = "unavailable";
+          li.innerHTML = `
+            <div>
+              <span>${dim.name}</span>
+              <span>Not yet assessed</span>
+            </div>
+          `;
         } else {
-          li.innerHTML = `<span>${dim.name}</span><span>${dim.latest_score} — ${dim.latest_feedback}</span>`;
+          li.innerHTML = `
+            <div>
+              <span>${dim.name}</span>
+              <span class="dimension-score">${dim.latest_score}%</span>
+            </div>
+            <div class="dimension-feedback">${dim.latest_feedback}</div>
+          `;
         }
         list.appendChild(li);
       }
