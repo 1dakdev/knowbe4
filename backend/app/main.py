@@ -1,13 +1,25 @@
 from pathlib import Path
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
+from app.database import Base, engine
 from app.routers import assessments, classes, health, student_auth, teacher_auth
 
-app = FastAPI(title="KnowBe4")
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup: create tables
+    Base.metadata.create_all(bind=engine)
+    yield
+    # Shutdown
+    pass
+
+
+app = FastAPI(title="KnowBe4", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
