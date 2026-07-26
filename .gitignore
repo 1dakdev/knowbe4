@@ -1,1 +1,7 @@
 .superpowers/
+*.db
+*.sqlite
+backend/init_wrapper.py
+backend/.env
+.claude/settings.local.json
+presentation*.html

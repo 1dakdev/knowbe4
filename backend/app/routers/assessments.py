@@ -116,20 +116,19 @@ def answer_assessment(
 
     dimension = db.get(SkillDimension, item.skill_dimension_id)
 
-    # Hardcoded grading feedback
-    answer_length = len(payload.answer.strip())
-    if answer_length < 5:
-        score = 40
-        feedback = "Your answer is too brief. Please provide more detail and explanation."
-    elif answer_length < 20:
-        score = 65
-        feedback = "Good start, but your answer needs more depth and specific examples."
-    elif answer_length < 50:
-        score = 80
-        feedback = "Well done! Your answer shows solid understanding with good detail."
+    # Grade based on correctness
+    correct_answer_lower = item.correct_answer.strip().lower()
+    student_answer_lower = payload.answer.strip().lower()
+
+    # Simple correctness check
+    is_correct = student_answer_lower in correct_answer_lower or correct_answer_lower in student_answer_lower
+
+    if is_correct:
+        score = 100
+        feedback = "Excellent! Your answer is correct. Well done!"
     else:
-        score = 92
-        feedback = "Excellent response! You've demonstrated thorough understanding with comprehensive reasoning."
+        score = 0
+        feedback = f"Not quite right. The correct answer is: {item.correct_answer}"
 
     item.student_answer = payload.answer
     item.score = score
@@ -231,43 +230,47 @@ def assess_full_class(
         db.add(dimension)
         db.flush()
 
-    # Hardcoded test questions by subject
+    # Hardcoded test questions by subject - MUST match subject keys exactly
     test_questions = {
         "math": {
-            "question": f"Solve this {topic} problem: If a store sells items at $12 each and you have $60, how many items can you buy?",
+            "question": f"Mathematics - {topic}: If a store sells items at $12 each and you have $60, how many items can you buy?",
             "answer": "5 items"
         },
-        "science": {
-            "question": f"Explain the key concepts of {topic} and describe how it works in nature. Provide at least two specific examples.",
-            "answer": "Response should include scientific concepts and real-world applications"
-        },
         "english": {
-            "question": f"Read this passage about {topic} and summarize the main idea in 2-3 sentences, then explain your understanding.",
+            "question": f"English - {topic}: Read this passage and summarize the main idea in 2-3 sentences, then explain your understanding.",
             "answer": "Response should demonstrate reading comprehension and analytical thinking"
         },
+        "science": {
+            "question": f"Science - {topic}: Explain the key concepts and describe how it works in nature. Provide at least two specific examples.",
+            "answer": "Response should include scientific concepts and real-world applications"
+        },
         "social-studies": {
-            "question": f"How has {topic} influenced society throughout history? Explain with at least two historical examples.",
+            "question": f"Social Studies - {topic}: How has this influenced society throughout history? Explain with at least two historical examples.",
             "answer": "Response should demonstrate understanding of historical cause and effect"
         },
         "art": {
-            "question": f"Describe how an artist might incorporate elements of {topic} into a visual artwork. What techniques would you use?",
+            "question": f"Art - {topic}: Describe how an artist might incorporate these elements into a visual artwork. What techniques would you use?",
             "answer": "Response should show creative thinking and understanding of artistic techniques"
         },
         "pe": {
-            "question": f"Explain the importance of {topic} in maintaining physical health and wellness. List three specific benefits.",
+            "question": f"Physical Education - {topic}: Explain the importance in maintaining physical health and wellness. List three specific benefits.",
             "answer": "Response should demonstrate knowledge of health and fitness principles"
         },
         "music": {
-            "question": f"Analyze how {topic} is used in a musical composition. What mood or feeling does it create?",
+            "question": f"Music - {topic}: Analyze how this is used in a musical composition. What mood or feeling does it create?",
             "answer": "Response should show understanding of musical elements and their effects"
         },
         "computer-science": {
-            "question": f"Explain how {topic} works in computer programming. Provide a practical example of when it would be used.",
+            "question": f"Computer Science - {topic}: Explain how this works in programming. Provide a practical example of when it would be used.",
             "answer": "Response should demonstrate technical understanding and practical application"
         },
     }
 
-    question_data = test_questions.get(subject, test_questions["science"])
+    # Get questions for selected subject - log error if subject not found
+    if subject not in test_questions:
+        raise HTTPException(status_code=400, detail=f"Subject '{subject}' not recognized. Valid subjects: {', '.join(test_questions.keys())}")
+
+    question_data = test_questions[subject]
 
     count = 0
     for student in students:
