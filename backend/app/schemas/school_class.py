@@ -18,3 +18,13 @@ class ClassOut(BaseModel):
 
 class RosterOut(ClassOut):
     students: list[StudentOut]
+
+
+class ClassStatsOut(BaseModel):
+    total_students: int
+    average_score: float | None
+    completion_rate: float
+    students_struggling: int
+    students_on_track: int
+    assessments_sent: int
+    assessments_completed: int

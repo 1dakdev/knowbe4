@@ -12,7 +12,7 @@ from app.models.school_class import SchoolClass
 from app.models.skill_dimension import SkillDimension
 from app.models.student import Student
 from app.models.teacher import Teacher
-from app.schemas.school_class import ClassCreateIn, ClassOut, RosterOut
+from app.schemas.school_class import ClassCreateIn, ClassOut, RosterOut, ClassStatsOut
 from app.schemas.student import StudentCreateIn, StudentCreatedOut, StudentOut, StudentProfileOut, StudentProfileDimensionOut
 
 router = APIRouter()
@@ -167,3 +167,61 @@ def get_student_profile(
     ]
 
     return StudentProfileOut(summary=summary, dimensions=dimensions_out)
+
+
+@router.get("/classes/{class_id}/stats", response_model=ClassStatsOut)
+def get_class_stats(
+    class_id: int,
+    current_teacher: Teacher = Depends(get_current_teacher),
+    db: Session = Depends(get_db),
+):
+    school_class = _get_owned_class(class_id, current_teacher, db)
+    students = db.query(Student).filter(Student.class_id == class_id).all()
+
+    total_students = len(students)
+    if total_students == 0:
+        return ClassStatsOut(
+            total_students=0,
+            average_score=None,
+            completion_rate=0.0,
+            students_struggling=0,
+            students_on_track=0,
+            assessments_sent=0,
+            assessments_completed=0,
+        )
+
+    scores = []
+    students_struggling = 0
+    students_on_track = 0
+    assessments_sent = 0
+    assessments_completed = 0
+
+    for student in students:
+        assessments = db.query(AssessmentItem).filter(AssessmentItem.student_id == student.id).all()
+        assessments_sent += len(assessments)
+
+        if assessments:
+            completed = [a for a in assessments if a.answered_at is not None]
+            assessments_completed += len(completed)
+
+            if completed:
+                avg_score = sum(a.score for a in completed if a.score is not None) / len(completed)
+                scores.append(avg_score)
+
+                if avg_score < 70:
+                    students_struggling += 1
+                elif avg_score >= 80:
+                    students_on_track += 1
+
+    average_score = sum(scores) / len(scores) if scores else None
+    completion_rate = (assessments_completed / assessments_sent * 100) if assessments_sent > 0 else 0.0
+
+    return ClassStatsOut(
+        total_students=total_students,
+        average_score=average_score,
+        completion_rate=completion_rate,
+        students_struggling=students_struggling,
+        students_on_track=students_on_track,
+        assessments_sent=assessments_sent,
+        assessments_completed=assessments_completed,
+    )

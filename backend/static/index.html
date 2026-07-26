@@ -1153,6 +1153,97 @@
     margin-bottom: 4px;
     font-weight: 600;
   }
+
+  /* Class Stats */
+  .class-stats-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+
+  .stat-card {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    transition: all 0.2s ease;
+  }
+
+  .stat-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    border-color: #10b981;
+  }
+
+  .stat-label {
+    font-size: 0.85rem;
+    color: #6b7280;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+  }
+
+  .stat-value {
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: #1a1a1a;
+    margin-bottom: 8px;
+  }
+
+  .stat-subtext {
+    font-size: 0.85rem;
+    color: #9ca3af;
+  }
+
+  .stat-card.success .stat-value { color: #10b981; }
+  .stat-card.warning .stat-value { color: #f59e0b; }
+  .stat-card.danger .stat-value { color: #ef4444; }
+  .stat-card.info .stat-value { color: #2563eb; }
+
+  /* Progress bar for students */
+  .student-progress {
+    margin-top: 8px;
+    height: 4px;
+    background: #e5e7eb;
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .student-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+    border-radius: 2px;
+    transition: width 0.3s ease;
+  }
+
+  .status-item-wrapper {
+    position: relative;
+  }
+
+  .struggle-indicator {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 12px;
+    height: 12px;
+    background: #ef4444;
+    border-radius: 50%;
+    display: none;
+    border: 2px solid #fff;
+    box-shadow: 0 0 0 1px #ef4444;
+  }
+
+  .status-item.at-risk .struggle-indicator {
+    display: block;
+  }
+
+  .student-meta {
+    font-size: 0.75rem;
+    color: #9ca3af;
+    margin-top: 4px;
+  }
 </style>
 </head>
 <body>
@@ -1238,6 +1329,9 @@
       <span id="pin-banner-text"></span>
       <button type="button" id="pin-banner-dismiss">&times;</button>
     </div>
+
+    <!-- Class Performance Summary -->
+    <div id="class-stats" class="class-stats-container"></div>
 
     <!-- Student Status Overview -->
     <div class="dashboard-card">
@@ -1447,22 +1541,81 @@
     clearError("roster-error");
     try {
       const roster = await api(`/classes/${classId}`);
+      const stats = await api(`/classes/${classId}/stats`);
       document.getElementById("roster-title").textContent = roster.name;
+
+      // 0. DISPLAY CLASS STATISTICS
+      const statsContainer = document.getElementById("class-stats");
+      statsContainer.innerHTML = "";
+
+      const avgScoreCard = document.createElement("div");
+      avgScoreCard.className = "stat-card " + (stats.average_score >= 80 ? "success" : stats.average_score >= 70 ? "warning" : "danger");
+      avgScoreCard.innerHTML = `
+        <div class="stat-label">Average Score</div>
+        <div class="stat-value">${stats.average_score ? stats.average_score.toFixed(1) : "—"}%</div>
+        <div class="stat-subtext">${stats.assessments_completed} completed</div>
+      `;
+      statsContainer.appendChild(avgScoreCard);
+
+      const completionCard = document.createElement("div");
+      completionCard.className = "stat-card " + (stats.completion_rate >= 80 ? "success" : "info");
+      completionCard.innerHTML = `
+        <div class="stat-label">Completion Rate</div>
+        <div class="stat-value">${stats.completion_rate.toFixed(0)}%</div>
+        <div class="stat-subtext">${stats.assessments_completed}/${stats.assessments_sent}</div>
+      `;
+      statsContainer.appendChild(completionCard);
+
+      const onTrackCard = document.createElement("div");
+      onTrackCard.className = "stat-card success";
+      onTrackCard.innerHTML = `
+        <div class="stat-label">On Track</div>
+        <div class="stat-value">${stats.students_on_track}</div>
+        <div class="stat-subtext">80%+ average</div>
+      `;
+      statsContainer.appendChild(onTrackCard);
+
+      const strugglingCard = document.createElement("div");
+      strugglingCard.className = "stat-card " + (stats.students_struggling > 0 ? "danger" : "success");
+      strugglingCard.innerHTML = `
+        <div class="stat-label">Struggling</div>
+        <div class="stat-value">${stats.students_struggling}</div>
+        <div class="stat-subtext">Below 70%</div>
+      `;
+      statsContainer.appendChild(strugglingCard);
 
       // 1. POPULATE STATUS GRID (clickable, color-coded)
       const statusGrid = document.getElementById("student-status-grid");
       statusGrid.innerHTML = "";
+
       for (const student of roster.students) {
-        const item = document.createElement("li");
+        const wrapper = document.createElement("li");
+        wrapper.className = "status-item-wrapper";
+
+        const item = document.createElement("div");
         item.className = "status-item";
         const score = student.latest_score || 0;
         if (score >= 80) item.classList.add("on-track");
         else if (score >= 70) item.classList.add("needs-attention");
         else item.classList.add("at-risk");
-        item.textContent = student.full_name;
+
+        item.innerHTML = `
+          <div>${student.full_name}</div>
+          <div class="student-meta">${score ? score + '%' : 'Pending'}</div>
+        `;
         item.style.cursor = "pointer";
         item.addEventListener("click", () => openProfile(classId, student.id, student.full_name));
-        statusGrid.appendChild(item);
+
+        const progress = document.createElement("div");
+        progress.className = "student-progress";
+        const progressFill = document.createElement("div");
+        progressFill.className = "student-progress-fill";
+        progressFill.style.width = score ? score + '%' : '0%';
+        progress.appendChild(progressFill);
+
+        wrapper.appendChild(item);
+        wrapper.appendChild(progress);
+        statusGrid.appendChild(wrapper);
       }
 
       // 2. GENERATE TEACHING GUIDANCE (grouped by performance level)
