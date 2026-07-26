@@ -19,6 +19,16 @@ from app.schemas.assessment import (
     AssessFullClassIn,
     AssessFullClassOut,
 )
+from pydantic import BaseModel
+
+
+class TeachingRecommendationsOut(BaseModel):
+    teaching_approach: str
+    practice_activities: str
+    resources: str
+    learning_style: str
+    next_steps: str
+
 
 router = APIRouter()
 
@@ -165,3 +175,38 @@ def assess_full_class(
 
     db.commit()
     return {"count": count}
+
+
+@router.get("/classes/{class_id}/students/{student_id}/teaching-recommendations", response_model=TeachingRecommendationsOut)
+def get_student_teaching_recommendations(
+    class_id: int,
+    student_id: int,
+    current_teacher: Teacher = Depends(get_current_teacher),
+    db: Session = Depends(get_db),
+):
+    student = _get_owned_student(class_id, student_id, current_teacher, db)
+
+    item = (
+        db.query(AssessmentItem)
+        .filter(AssessmentItem.student_id == student.id, AssessmentItem.answered_at != None)
+        .order_by(AssessmentItem.answered_at.desc())
+        .first()
+    )
+
+    if item is None:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No answered assessments found")
+
+    try:
+        recommendations = gemini_client.generate_teaching_recommendations(
+            student_name=student.full_name,
+            grade_level=student.grade_level,
+            topic="Math",
+            student_score=item.score,
+            student_answer=item.student_answer,
+            correct_answer=item.correct_answer,
+            question_text=item.question_text,
+            feedback=item.feedback,
+        )
+        return TeachingRecommendationsOut(**recommendations)
+    except GeminiError:
+        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail="Failed to generate recommendations")

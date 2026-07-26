@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <title>KnowBe4</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📚</text></svg>" />
 <style>
   :root {
     --bg: #f4f6f9;
@@ -797,18 +798,45 @@
   }
 
   .profile-item {
-    padding: 16px;
-    border-radius: 8px;
+    padding: 12px;
+    border-radius: 10px;
     border: 1px solid #e5e7eb;
-    background: #fafbfc;
+    background: #fff;
     cursor: pointer;
     transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 12px;
   }
 
   .profile-item:hover {
-    border-color: #10b981;
-    background: #fff;
-    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.1);
+    border-color: #2563eb;
+    background: #f0f9ff;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
+    transform: translateY(-2px);
+  }
+
+  .profile-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #2563eb;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+  }
+
+  .profile-avatar.excellent { background: #22a06b; }
+  .profile-avatar.good { background: #6366f1; }
+  .profile-avatar.average { background: #f59e0b; }
+  .profile-avatar.struggling { background: #b91c1c; }
+
+  .profile-info {
+    flex: 1;
   }
 
   .profile-item-name {
@@ -816,13 +844,30 @@
     color: #1a1a1a;
     display: block;
     margin-bottom: 4px;
+    font-size: 0.95rem;
   }
 
   .profile-item-detail {
     color: #999;
-    font-size: 0.85rem;
-    display: block;
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
   }
+
+  .score-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+
+  .score-badge.excellent { background: #dcf5e8; color: #22a06b; }
+  .score-badge.good { background: #e0e7ff; color: #6366f1; }
+  .score-badge.average { background: #fef3c7; color: #f59e0b; }
+  .score-badge.struggling { background: #fee2e2; color: #b91c1c; }
+  .score-badge.pending { background: #f0f0f0; color: #666; }
 
   .intervention-list {
     list-style: none;
@@ -1056,10 +1101,241 @@
   #profile-dimensions li span:last-child { color: var(--text-dim); font-size: 0.85rem; }
   #assess-full-profile-btn { width: 100%; margin-top: 20px; }
 
+  #teaching-recommendations { background: #f0f9ff; border: 1px solid #bfdbfe; border-radius: 12px; padding: 24px; margin: 24px 0; }
+  #teaching-recommendations h3 { color: #1e40af; margin: 0 0 20px; font-size: 1rem; }
+
+  .recommendations-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+
+  .recommendation-card { background: white; border: 1px solid #e5e7eb; border-radius: 10px; padding: 16px; }
+  .recommendation-card h4 { margin: 0 0 12px; font-size: 0.9rem; color: var(--text); display: flex; align-items: center; gap: 8px; }
+  .recommendation-card p { margin: 0; font-size: 0.85rem; color: var(--text-dim); line-height: 1.4; }
+
+  .card-icon { font-size: 1.2rem; }
+
+  .learning-style-badge { display: inline-block; background: #dbeafe; color: #0369a1; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; margin-bottom: 8px; }
+
+  .performance-indicator { display: flex; align-items: center; gap: 8px; margin: 8px 0; }
+  .performance-dot { width: 12px; height: 12px; border-radius: 50%; }
+  .performance-excellent { background: #22a06b; }
+  .performance-good { background: #6366f1; }
+  .performance-average { background: #f59e0b; }
+  .performance-struggling { background: #b91c1c; }
+
+  .key-focus { background: #fef3c7; border-left: 4px solid #f59e0b; padding: 12px; border-radius: 6px; margin: 12px 0; font-size: 0.85rem; color: #92400e; }
+
+  .recommendation-toggle { background: white; border: 1px solid #e5e7eb; padding: 12px; border-radius: 8px; margin-top: 12px; text-align: center; cursor: pointer; color: #0369a1; font-size: 0.85rem; font-weight: 600; }
+  .recommendation-toggle:hover { background: #f0f9ff; }
+
+  .full-recommendations { display: none; margin-top: 20px; padding-top: 20px; border-top: 1px solid #bfdbfe; }
+  .full-recommendations.show { display: block; }
+
+  .full-rec-section { margin: 16px 0; }
+  .full-rec-section h5 { color: #1e40af; margin: 0 0 8px; font-size: 0.9rem; }
+  .full-rec-section p { color: #4b5563; font-size: 0.85rem; line-height: 1.5; margin: 0; }
+
+  #recommendation-loading { text-align: center; color: var(--text-dim); padding: 20px; }
+
   [hidden] { display: none; }
+
+  /* --- Consent Modal --- */
+  .consent-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 20px;
+  }
+
+  .consent-modal-content {
+    background: #fff;
+    border-radius: 12px;
+    max-width: 600px;
+    width: 100%;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  }
+
+  .consent-modal-header {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: #fff;
+    padding: 28px;
+    border-radius: 12px 12px 0 0;
+  }
+
+  .consent-modal-header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    color: #fff;
+  }
+
+  .consent-modal-body {
+    padding: 28px;
+  }
+
+  .consent-section {
+    margin-bottom: 24px;
+  }
+
+  .consent-section h3 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 0 0 12px;
+  }
+
+  .consent-section p {
+    margin: 0 0 12px;
+    color: #4b5563;
+    line-height: 1.6;
+    font-size: 0.95rem;
+  }
+
+  .consent-section ul {
+    margin: 12px 0;
+    padding-left: 20px;
+    color: #4b5563;
+    font-size: 0.95rem;
+  }
+
+  .consent-section li {
+    margin-bottom: 8px;
+    line-height: 1.5;
+  }
+
+  .consent-checkbox-container {
+    background: #f9fafb;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 16px;
+    margin: 24px 0;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .consent-checkbox-container input[type="checkbox"] {
+    margin-top: 4px;
+    cursor: pointer;
+    width: 20px;
+    height: 20px;
+  }
+
+  .consent-checkbox-label {
+    cursor: pointer;
+    font-size: 0.95rem;
+    color: #1a1a1a;
+    font-weight: 500;
+  }
+
+  .consent-modal-footer {
+    display: flex;
+    gap: 12px;
+    padding: 28px;
+    border-top: 1px solid #e5e7eb;
+    background: #f9fafb;
+    border-radius: 0 0 12px 12px;
+  }
+
+  .consent-modal-footer button {
+    flex: 1;
+    padding: 12px 20px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .consent-modal-footer .btn-accept {
+    background: #10b981;
+    color: #fff;
+    border: none;
+  }
+
+  .consent-modal-footer .btn-accept:hover {
+    background: #059669;
+  }
+
+  .consent-modal-footer .btn-accept:disabled {
+    background: #9ca3af;
+    cursor: not-allowed;
+  }
+
+  .consent-modal-footer .btn-decline {
+    background: #f3f4f6;
+    color: #1f2937;
+    border: 1px solid #d1d5db;
+  }
+
+  .consent-modal-footer .btn-decline:hover {
+    background: #e5e7eb;
+  }
 </style>
 </head>
 <body>
+
+<div id="consent-modal" class="consent-modal" hidden>
+  <div class="consent-modal-content">
+    <div class="consent-modal-header">
+      <h2>Parental Consent Required</h2>
+    </div>
+    <div class="consent-modal-body">
+      <div class="consent-section">
+        <h3>Important Notice for Parents and Guardians</h3>
+        <p>
+          KnowBe4 uses artificial intelligence (AI) technology to generate personalized assessments and provide learning insights for students. To use this platform, we require your consent for student data processing.
+        </p>
+      </div>
+
+      <div class="consent-section">
+        <h3>How Student Data is Used:</h3>
+        <ul>
+          <li><strong>Assessment Generation:</strong> AI generates grade-appropriate questions based on subject and topic</li>
+          <li><strong>Answer Grading:</strong> AI grades student responses and provides feedback</li>
+          <li><strong>Learning Insights:</strong> AI creates personalized student profiles summarizing strengths and areas for growth</li>
+          <li><strong>Data Processing:</strong> Student assessment data is processed by Google Gemini AI for these purposes</li>
+        </ul>
+      </div>
+
+      <div class="consent-section">
+        <h3>Data Protection:</h3>
+        <ul>
+          <li>All student data is treated securely and confidentially</li>
+          <li>Data is only used for educational assessment purposes</li>
+          <li>Parents/guardians can request data deletion at any time</li>
+          <li>This platform complies with FERPA and student privacy regulations</li>
+        </ul>
+      </div>
+
+      <div class="consent-section">
+        <h3>Your Consent:</h3>
+        <div class="consent-checkbox-container">
+          <input type="checkbox" id="consent-checkbox" />
+          <label for="consent-checkbox" class="consent-checkbox-label">
+            I certify that I am a parent or legal guardian and I consent to student data being processed by AI systems for educational assessment and personalized learning insights as described above.
+          </label>
+        </div>
+      </div>
+
+      <div class="consent-section" style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 16px; border-radius: 6px; margin: 20px 0;">
+        <p style="margin: 0; color: #92400e; font-weight: 500;">
+          ⚠️ By clicking "I Consent," you acknowledge that you have read and agree to allow student data to be processed by this platform's AI systems.
+        </p>
+      </div>
+    </div>
+    <div class="consent-modal-footer">
+      <button type="button" class="btn-decline" id="consent-decline">Decline</button>
+      <button type="button" class="btn-accept" id="consent-accept" disabled>I Consent</button>
+    </div>
+  </div>
+</div>
 
 <section id="login-view">
   <div class="login-header">
@@ -1087,7 +1363,7 @@
         </div>
         <div class="field">
           <label for="login-password">Password</label>
-          <input type="password" id="login-password" placeholder="••••••••" required />
+          <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password" required />
         </div>
         <button type="submit">Sign in</button>
       </form>
@@ -1214,6 +1490,14 @@
     <h2>Assessment dimensions</h2>
     <ul id="profile-dimensions"></ul>
   </div>
+
+  <div id="teaching-recommendations" hidden>
+    <h3>AI Teaching Recommendations</h3>
+    <div id="recommendation-loading">Loading recommendations...</div>
+    <div id="recommendation-cards"></div>
+    <div id="full-recommendations" class="full-recommendations"></div>
+  </div>
+
   <button type="button" id="assess-full-profile-btn">Assess full profile</button>
   <p class="error" id="profile-error" hidden></p>
 </section>
@@ -1254,6 +1538,26 @@
     profile: document.getElementById("profile-view"),
   };
 
+  function hasConsentedToAI() {
+    return localStorage.getItem("ai-consent-v1") === "true";
+  }
+
+  function setConsentToAI(value) {
+    if (value) {
+      localStorage.setItem("ai-consent-v1", "true");
+    } else {
+      localStorage.removeItem("ai-consent-v1");
+    }
+  }
+
+  function showConsentModal() {
+    document.getElementById("consent-modal").hidden = false;
+  }
+
+  function hideConsentModal() {
+    document.getElementById("consent-modal").hidden = true;
+  }
+
   function showView(name) {
     for (const key in views) views[key].hidden = key !== name;
     window.scrollTo(0, 0);
@@ -1293,11 +1597,38 @@
         body: JSON.stringify({ email, password }),
       });
       token = result.access_token;
-      await loadClasses();
-      showView("classes");
+
+      if (!hasConsentedToAI()) {
+        showConsentModal();
+      } else {
+        await loadClasses();
+        showView("classes");
+      }
     } catch (err) {
       showError("login-error", err.message);
     }
+  });
+
+  document.getElementById("consent-checkbox").addEventListener("change", (e) => {
+    document.getElementById("consent-accept").disabled = !e.target.checked;
+  });
+
+  document.getElementById("consent-accept").addEventListener("click", async () => {
+    setConsentToAI(true);
+    hideConsentModal();
+    await loadClasses();
+    showView("classes");
+  });
+
+  document.getElementById("consent-decline").addEventListener("click", () => {
+    token = null;
+    document.getElementById("login-email").value = "";
+    document.getElementById("login-password").value = "";
+    document.getElementById("consent-checkbox").checked = false;
+    document.getElementById("consent-accept").disabled = true;
+    hideConsentModal();
+    showView("login");
+    showError("login-error", "Consent is required to use this platform.");
   });
 
   async function loadClasses() {
@@ -1383,24 +1714,71 @@
         guidance.appendChild(group);
       }
 
-      // 3. POPULATE PROFILE LIST (clickable student names)
+      // 3. POPULATE PROFILE LIST (visual student cards)
       const profileList = document.getElementById("roster-list");
       profileList.innerHTML = "";
       for (const student of roster.students) {
+        const score = student.latest_score || 0;
+        let performanceLevel = "pending";
+        let performanceBadge = "No score";
+
+        if (student.latest_score !== null) {
+          if (score >= 80) {
+            performanceLevel = "excellent";
+            performanceBadge = "Excellent";
+          } else if (score >= 70) {
+            performanceLevel = "good";
+            performanceBadge = "Good";
+          } else if (score >= 60) {
+            performanceLevel = "average";
+            performanceBadge = "Average";
+          } else {
+            performanceLevel = "struggling";
+            performanceBadge = "Needs Help";
+          }
+        }
+
         const item = document.createElement("li");
-        item.className = "roster-item";
+        item.className = "profile-item";
+
+        // Avatar with initials
+        const initials = student.full_name.split(" ").map(n => n[0]).join("").toUpperCase();
+        const avatar = document.createElement("div");
+        avatar.className = `profile-avatar ${performanceLevel === "pending" ? "" : performanceLevel}`;
+        avatar.textContent = initials;
+
+        // Info section
+        const info = document.createElement("div");
+        info.className = "profile-info";
+
+        const name = document.createElement("span");
+        name.className = "profile-item-name";
+        name.textContent = student.full_name;
+
+        const detail = document.createElement("span");
+        detail.className = "profile-item-detail";
+
+        const badge = document.createElement("span");
+        badge.className = `score-badge ${performanceLevel}`;
+        badge.textContent = performanceBadge;
+
+        if (student.latest_score !== null) {
+          const score_text = document.createElement("span");
+          score_text.textContent = `${student.latest_score}%`;
+          score_text.style.marginLeft = "8px";
+          score_text.style.fontWeight = "700";
+          detail.appendChild(badge);
+          detail.appendChild(score_text);
+        } else {
+          detail.appendChild(badge);
+        }
+
+        info.appendChild(name);
+        info.appendChild(detail);
+
+        item.appendChild(avatar);
+        item.appendChild(info);
         item.style.cursor = "pointer";
-        const leftDiv = document.createElement("div");
-        leftDiv.className = "roster-item-left";
-        const nameSpan = document.createElement("span");
-        nameSpan.textContent = student.full_name;
-        const scoreSpan = document.createElement("span");
-        scoreSpan.textContent = student.latest_score === null ? "No score yet" : `${student.latest_score}%`;
-        scoreSpan.style.color = "var(--text-dim)";
-        scoreSpan.style.fontSize = "0.85rem";
-        leftDiv.appendChild(nameSpan);
-        leftDiv.appendChild(scoreSpan);
-        item.appendChild(leftDiv);
         item.addEventListener("click", () => openProfile(classId, student.id, student.full_name));
         profileList.appendChild(item);
       }
@@ -1420,23 +1798,48 @@
       interventionList.innerHTML = "";
       const atRiskStudents = roster.students.filter(s => s.latest_score !== null && s.latest_score < 70);
       if (atRiskStudents.length === 0) {
-        interventionList.innerHTML = "<li style='color: var(--text-dim); padding: 12px;'>No students need intervention</li>";
+        interventionList.innerHTML = "<li style='color: var(--text-dim); padding: 12px; text-align: center;'>✓ All students on track</li>";
       } else {
         for (const student of atRiskStudents) {
           const item = document.createElement("li");
-          item.className = "roster-item";
+          item.className = "profile-item";
+
+          // Avatar (red for at-risk)
+          const initials = student.full_name.split(" ").map(n => n[0]).join("").toUpperCase();
+          const avatar = document.createElement("div");
+          avatar.className = "profile-avatar struggling";
+          avatar.textContent = initials;
+
+          // Info section
+          const info = document.createElement("div");
+          info.className = "profile-info";
+
+          const name = document.createElement("span");
+          name.className = "profile-item-name";
+          name.textContent = student.full_name;
+
+          const detail = document.createElement("span");
+          detail.className = "profile-item-detail";
+
+          const badge = document.createElement("span");
+          badge.className = "score-badge struggling";
+          badge.textContent = "Priority";
+
+          const score_text = document.createElement("span");
+          score_text.textContent = `${student.latest_score}%`;
+          score_text.style.marginLeft = "8px";
+          score_text.style.fontWeight = "700";
+          score_text.style.color = "#b91c1c";
+
+          detail.appendChild(badge);
+          detail.appendChild(score_text);
+
+          info.appendChild(name);
+          info.appendChild(detail);
+
+          item.appendChild(avatar);
+          item.appendChild(info);
           item.style.cursor = "pointer";
-          const leftDiv = document.createElement("div");
-          leftDiv.className = "roster-item-left";
-          const nameSpan = document.createElement("span");
-          nameSpan.textContent = student.full_name;
-          const scoreSpan = document.createElement("span");
-          scoreSpan.textContent = `${student.latest_score}%`;
-          scoreSpan.style.color = "#dc2626";
-          scoreSpan.style.fontWeight = "600";
-          leftDiv.appendChild(nameSpan);
-          leftDiv.appendChild(scoreSpan);
-          item.appendChild(leftDiv);
           item.addEventListener("click", () => openProfile(classId, student.id, student.full_name));
           interventionList.appendChild(item);
         }
@@ -1616,6 +2019,97 @@
     showView("login");
   });
 
+  async function loadTeachingRecommendations(classId, studentId) {
+    const recDiv = document.getElementById("teaching-recommendations");
+    try {
+      const recommendations = await api(`/classes/${classId}/students/${studentId}/teaching-recommendations`);
+
+      // Determine performance level based on text
+      let performanceLevel = "average";
+      let performanceIcon = "📊";
+      if (recommendations.teaching_approach.toLowerCase().includes("complex") ||
+          recommendations.teaching_approach.toLowerCase().includes("advanced") ||
+          recommendations.teaching_approach.toLowerCase().includes("challenge")) {
+        performanceLevel = "excellent";
+        performanceIcon = "⭐";
+      } else if (recommendations.teaching_approach.toLowerCase().includes("concrete") ||
+                 recommendations.teaching_approach.toLowerCase().includes("manipulative") ||
+                 recommendations.teaching_approach.toLowerCase().includes("struggling")) {
+        performanceLevel = "struggling";
+        performanceIcon = "⚠️";
+      }
+
+      // Extract learning style
+      const learningStyleMatch = recommendations.learning_style.match(/kinesthetic|visual|auditory|tactile/i);
+      const learningStyle = learningStyleMatch ? learningStyleMatch[0].charAt(0).toUpperCase() + learningStyleMatch[0].slice(1) : "Multi-sensory";
+      const styleIcon = learningStyle.includes("Visual") ? "👁️" : learningStyle.includes("Kinesthetic") ? "🤲" : learningStyle.includes("Auditory") ? "👂" : "🧠";
+
+      // Extract key focus (first sentence or key phrase)
+      const keyFocus = recommendations.next_steps.split(".")[0];
+
+      const cardsHtml = `
+        <div class="recommendations-grid">
+          <div class="recommendation-card">
+            <h4>${performanceIcon} Performance Level</h4>
+            <div class="performance-indicator">
+              <div class="performance-dot performance-${performanceLevel}"></div>
+              <span style="text-transform: capitalize; font-weight: 600;">${performanceLevel}</span>
+            </div>
+            <p>${performanceLevel === "excellent" ? "Excelling - Ready for challenges" : performanceLevel === "struggling" ? "Needs support and concrete materials" : "On track - Consistent progress"}</p>
+          </div>
+
+          <div class="recommendation-card">
+            <h4>${styleIcon} Learning Style</h4>
+            <div class="learning-style-badge">${learningStyle} Learner</div>
+            <p>${learningStyle === "Visual" ? "Learns best with diagrams and visuals" : learningStyle === "Kinesthetic" ? "Learns best with hands-on activities" : learningStyle === "Auditory" ? "Learns best through listening" : "Benefits from multiple modalities"}</p>
+          </div>
+
+          <div class="recommendation-card">
+            <h4>📚 Teaching Approach</h4>
+            <p>${recommendations.teaching_approach.substring(0, 100)}...</p>
+          </div>
+
+          <div class="recommendation-card">
+            <h4>🎯 Focus Area</h4>
+            <div class="key-focus">${keyFocus}</div>
+          </div>
+        </div>
+      `;
+
+      const fullRecHtml = `
+        <div class="full-rec-section">
+          <h5>Teaching Approach</h5>
+          <p>${recommendations.teaching_approach}</p>
+        </div>
+        <div class="full-rec-section">
+          <h5>Practice Activities</h5>
+          <p>${recommendations.practice_activities}</p>
+        </div>
+        <div class="full-rec-section">
+          <h5>Resources & Materials</h5>
+          <p>${recommendations.resources}</p>
+        </div>
+        <div class="full-rec-section">
+          <h5>Learning Style Analysis</h5>
+          <p>${recommendations.learning_style}</p>
+        </div>
+        <div class="full-rec-section">
+          <h5>Next Steps</h5>
+          <p>${recommendations.next_steps}</p>
+        </div>
+      `;
+
+      document.getElementById("recommendation-cards").innerHTML = cardsHtml;
+      document.getElementById("full-recommendations").innerHTML =
+        `<button class="recommendation-toggle" onclick="document.getElementById('full-recommendations').classList.toggle('show'); this.textContent = document.getElementById('full-recommendations').classList.contains('show') ? 'Hide Full Details' : 'View Full Details';">View Full Details</button>` +
+        `<div>${fullRecHtml}</div>`;
+
+      recDiv.hidden = false;
+    } catch (err) {
+      recDiv.hidden = true;
+    }
+  }
+
   async function openProfile(classId, studentId, studentName) {
     currentProfileStudentId = studentId;
     clearError("profile-error");
@@ -1637,6 +2131,8 @@
         }
         list.appendChild(li);
       }
+
+      await loadTeachingRecommendations(classId, studentId);
       showView("profile");
     } catch (err) {
       showError("profile-error", err.message);

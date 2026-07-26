@@ -126,3 +126,63 @@ def synthesize_profile_summary(results: list[dict]) -> str:
         return response.text.strip()
     except Exception as exc:
         raise GeminiError(f"Profile summary failed: {exc}") from exc
+
+
+def generate_teaching_recommendations(
+    student_name: str,
+    grade_level: int,
+    topic: str,
+    student_score: int,
+    student_answer: str,
+    correct_answer: str,
+    question_text: str,
+    feedback: str,
+) -> dict:
+    """Generate personalized teaching recommendations based on student's assessment performance."""
+    difficulty = "struggling" if student_score < 60 else "proficient" if student_score < 85 else "advanced"
+
+    prompt = (
+        f"Student: {student_name} (Grade {grade_level})\n"
+        f"Topic: {topic}\n"
+        f"Question: {question_text}\n"
+        f"Correct answer: {correct_answer}\n"
+        f"Student's answer: {student_answer}\n"
+        f"Score: {student_score}/100\n"
+        f"AI Feedback: {feedback}\n\n"
+        f"Based on this student's performance (they are {difficulty}), generate:\n"
+        "1. TEACHING_APPROACH: How the teacher should teach this topic to help this student. "
+        "Be specific about teaching methods, pacing, and examples.\n"
+        "2. PRACTICE_ACTIVITIES: 2-3 specific practice activities or exercises to reinforce learning.\n"
+        "3. RESOURCES: Specific materials, manipulatives, or reference materials to use "
+        "(e.g., number lines, visual aids, real-world examples).\n"
+        "4. LEARNING_STYLE: How this student seems to learn best based on their answer.\n"
+        "5. NEXT_STEPS: What specific skills to focus on next.\n\n"
+        "Format as JSON with these exact keys."
+    )
+
+    schema = {
+        "type": "object",
+        "properties": {
+            "teaching_approach": {"type": "string"},
+            "practice_activities": {"type": "string"},
+            "resources": {"type": "string"},
+            "learning_style": {"type": "string"},
+            "next_steps": {"type": "string"},
+        },
+        "required": ["teaching_approach", "practice_activities", "resources", "learning_style", "next_steps"],
+    }
+
+    try:
+        client = _client()
+        response = client.models.generate_content(
+            model=_MODEL,
+            contents=prompt,
+            config=types.GenerateContentConfig(
+                response_mime_type="application/json",
+                response_schema=schema,
+            ),
+        )
+        data = json.loads(response.text)
+        return data
+    except Exception as exc:
+        raise GeminiError(f"Teaching recommendations failed: {exc}") from exc

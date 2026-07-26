@@ -4,72 +4,368 @@
 <meta charset="utf-8" />
 <title>KnowBe4 — Student</title>
 <style>
-  body { font-family: system-ui, sans-serif; max-width: 480px; margin: 40px auto; padding: 0 16px; color: #1a1a1a; }
-  h1 { font-size: 1.25rem; }
-  form { display: flex; flex-direction: column; gap: 8px; margin: 16px 0; }
-  input { padding: 8px; font-size: 1rem; }
-  button { padding: 8px; font-size: 1rem; cursor: pointer; }
-  .error { color: #b00020; font-size: 0.9rem; }
-  .question { background: #f5f5f5; padding: 12px; margin: 12px 0; }
-  .result { background: #e6f4ea; border: 1px solid #34a853; padding: 12px; margin: 12px 0; }
-  [hidden] { display: none; }
+  :root {
+    --bg: #f4f6f9;
+    --surface: #ffffff;
+    --border: #dde2e8;
+    --text: #1f2937;
+    --text-dim: #6b7280;
+    --accent: #2563eb;
+    --accent-hover: #1d4ed8;
+    --success: #22a06b;
+    --success-bg: #dcf5e8;
+    --warning: #f59e0b;
+    --danger: #b91c1c;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    font-family: system-ui, -apple-system, sans-serif;
+    margin: 0;
+    min-height: 100vh;
+    color: var(--text);
+    background: var(--bg);
+  }
+
+  h1 { font-size: 1.2rem; font-weight: 600; margin: 0 0 4px; }
+  h2 { font-size: 0.95rem; font-weight: 600; margin: 20px 0 12px; color: var(--text-dim); }
+
+  /* LOGIN VIEW */
+  #login-view {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  .login-card {
+    width: 100%;
+    max-width: 360px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 32px;
+    box-shadow: 0 1px 3px rgba(16, 24, 40, 0.06), 0 8px 24px rgba(16, 24, 40, 0.06);
+    text-align: center;
+  }
+
+  .login-logo {
+    width: 40px;
+    height: 40px;
+    margin: 0 auto 16px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    color: #fff;
+    background: var(--accent);
+  }
+
+  .login-card h1 { font-size: 1.2rem; }
+  .login-subtitle { color: var(--text-dim); font-size: 0.88rem; margin: 0 0 24px; }
+
+  form { display: flex; flex-direction: column; gap: 12px; margin: 16px 0; }
+
+  .field { text-align: left; }
+  .field label {
+    display: block;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+
+  input {
+    width: 100%;
+    padding: 10px 12px;
+    font-size: 0.95rem;
+    font-family: inherit;
+    color: var(--text);
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    outline: none;
+    transition: border-color 0.15s ease;
+  }
+  input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15); }
+
+  button {
+    padding: 10px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    border: none;
+    border-radius: 6px;
+    color: #fff;
+    background: var(--accent);
+    transition: background 0.15s ease;
+  }
+  button:hover { background: var(--accent-hover); }
+
+  .error { color: var(--danger); background: #fef2f2; border: 1px solid #fecaca; padding: 10px 12px; border-radius: 6px; font-size: 0.85rem; margin-top: 12px; }
+
+  /* DASHBOARD VIEW */
+  #dashboard-view {
+    padding: 20px;
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+
+  .dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .logout-btn {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 8px 16px;
+    font-size: 0.85rem;
+    border-radius: 6px;
+  }
+  .logout-btn:hover { background: var(--bg); }
+
+  .dashboard-grid {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 24px;
+    margin-bottom: 24px;
+  }
+
+  @media (max-width: 768px) {
+    .dashboard-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .profile-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    text-align: center;
+    height: fit-content;
+  }
+
+  .profile-avatar {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 16px;
+    border-radius: 50%;
+    background: var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 2rem;
+    font-weight: 700;
+  }
+
+  .profile-name { font-size: 1.2rem; font-weight: 700; margin: 0 0 4px; }
+  .profile-grade { color: var(--text-dim); font-size: 0.9rem; margin: 0 0 16px; }
+  .profile-divider { height: 1px; background: var(--border); margin: 16px 0; }
+
+  .profile-stat {
+    margin: 12px 0;
+  }
+
+  .stat-label { color: var(--text-dim); font-size: 0.85rem; }
+  .stat-value { font-size: 1.5rem; font-weight: 700; color: var(--accent); margin: 4px 0 0; }
+
+  .assessments-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 24px;
+  }
+
+  .assessments-section h2 { margin-top: 0; }
+
+  .empty-state {
+    background: var(--bg);
+    border: 1px dashed var(--border);
+    border-radius: 8px;
+    padding: 24px;
+    text-align: center;
+    color: var(--text-dim);
+  }
+
+  .question-card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+
+  .question-badge {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--warning);
+    background: #fef3c7;
+    padding: 4px 10px;
+    border-radius: 999px;
+    margin-bottom: 12px;
+  }
+
+  .question-text { font-size: 1rem; font-weight: 600; line-height: 1.5; margin: 0 0 16px; }
+
+  .answer-form { display: flex; gap: 10px; }
+  .answer-form input { flex: 1; padding: 10px 12px; border: 1px solid var(--border); border-radius: 6px; }
+  .answer-form button { padding: 10px 20px; }
+
+  .result-card {
+    background: var(--success-bg);
+    border: 1px solid var(--success);
+    border-radius: 8px;
+    padding: 20px;
+  }
+
+  .score-big { font-size: 2.2rem; font-weight: 800; color: var(--success); margin: 0 0 8px; }
+  .feedback-text { color: var(--text); font-size: 0.95rem; line-height: 1.5; margin: 0; }
+
+  .done-box {
+    background: var(--success-bg);
+    border: 1px solid var(--success);
+    border-radius: 8px;
+    padding: 40px 24px;
+    text-align: center;
+  }
+  .done-box h2 { color: var(--success); margin: 0 0 8px; font-size: 1.3rem; }
+  .done-box p { color: var(--text-dim); margin: 0; }
+
+  .next-btn { margin-top: 16px; }
+
+  #history-list { list-style: none; padding: 0; margin: 0; }
+
+  .hidden { display: none; }
 </style>
 </head>
 <body>
 
-<section id="login-view">
-  <h1>KnowBe4 — Student login</h1>
-  <form id="login-form">
-    <input type="number" id="login-student-id" placeholder="Student ID" required />
-    <input type="text" id="login-pin" placeholder="PIN" required />
-    <button type="submit">Log in</button>
-  </form>
-  <p class="error" id="login-error" hidden></p>
-</section>
-
-<section id="question-view" hidden>
-  <h1>Your question</h1>
-  <div id="no-question" hidden>No questions right now.</div>
-  <div id="question-box" hidden>
-    <p class="question" id="question-text"></p>
-    <form id="answer-form">
-      <input type="number" id="answer-input" placeholder="Your answer" required />
-      <button type="submit">Submit answer</button>
+<!-- LOGIN VIEW -->
+<div id="login-view">
+  <div class="login-card">
+    <div class="login-logo">KB4</div>
+    <h1>KnowBe4</h1>
+    <p class="login-subtitle">Sign in to start learning</p>
+    <form id="login-form">
+      <div class="field">
+        <label for="login-student-id">Student ID</label>
+        <input type="number" id="login-student-id" placeholder="e.g. 1" required />
+      </div>
+      <div class="field">
+        <label for="login-pin">PIN</label>
+        <input type="text" id="login-pin" placeholder="4-digit PIN" maxlength="4" inputmode="numeric" required />
+      </div>
+      <button type="submit">Sign in</button>
     </form>
+    <p class="error" id="login-error" class="hidden"></p>
   </div>
-  <div class="result" id="result-box" hidden>
-    <p id="result-score"></p>
-    <p id="result-feedback"></p>
-    <button type="button" id="next-question-btn">Next question</button>
+</div>
+
+<!-- DASHBOARD VIEW -->
+<div id="dashboard-view" class="hidden">
+  <div class="dashboard-header">
+    <h1>Dashboard</h1>
+    <button type="button" class="logout-btn" id="logout-btn">Sign out</button>
   </div>
-  <div id="done-box" hidden>
-    <p>All done — nice work!</p>
-    <button type="button" id="logout-btn">Sign out</button>
+
+  <div class="dashboard-grid">
+    <!-- PROFILE CARD -->
+    <div class="profile-card">
+      <div class="profile-avatar" id="profile-avatar">S</div>
+      <p class="profile-name" id="student-name">Student Name</p>
+      <p class="profile-grade" id="student-grade">Grade 2</p>
+      <div class="profile-divider"></div>
+      <div class="profile-stat">
+        <p class="stat-label">Assessments Completed</p>
+        <p class="stat-value" id="completed-count">0</p>
+      </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div>
+      <!-- COMPLETED ASSESSMENTS -->
+      <div class="assessments-section" id="history-section" class="hidden">
+        <h2>Completed assessments</h2>
+        <ul id="history-list"></ul>
+      </div>
+
+      <!-- NEW QUESTIONS -->
+      <div class="assessments-section hidden" id="pending-section">
+        <h2>New questions</h2>
+
+        <div id="no-question-box" class="empty-state hidden">
+          <p>All caught up! No new questions right now.</p>
+        </div>
+
+        <div id="question-box" class="question-card hidden">
+          <span class="question-badge">Question</span>
+          <p class="question-text" id="question-text"></p>
+          <form id="answer-form" class="answer-form">
+            <input type="text" id="answer-input" placeholder="Your answer" required />
+            <button type="submit">Submit</button>
+          </form>
+        </div>
+
+        <div id="result-box" class="result-card hidden">
+          <p class="score-big" id="result-score">0/100</p>
+          <p class="feedback-text" id="result-feedback">Great work!</p>
+          <button type="button" class="next-btn" id="next-question-btn">Next question</button>
+        </div>
+
+        <div id="done-box" class="done-box hidden">
+          <h2>All done!</h2>
+          <p>Nice work finishing all your questions!</p>
+        </div>
+
+        <p class="error hidden" id="question-error"></p>
+      </div>
+    </div>
   </div>
-  <p class="error" id="question-error" hidden></p>
-</section>
+</div>
 
 <script>
   let token = null;
   let currentItemId = null;
+  let studentData = null;
 
-  const views = {
-    login: document.getElementById("login-view"),
-    question: document.getElementById("question-view"),
-  };
-
-  function showView(name) {
-    for (const key in views) views[key].hidden = key !== name;
-  }
-
-  function showError(elementId, message) {
-    const el = document.getElementById(elementId);
+  function showError(id, message) {
+    const el = document.getElementById(id);
     el.textContent = message;
-    el.hidden = false;
+    el.classList.remove("hidden");
   }
 
-  function clearError(elementId) {
-    document.getElementById(elementId).hidden = true;
+  function hideError(id) {
+    document.getElementById(id).classList.add("hidden");
+  }
+
+  function showView(viewName) {
+    const loginView = document.getElementById("login-view");
+    const dashboardView = document.getElementById("dashboard-view");
+
+    console.log("showView called with:", viewName);
+    if (viewName === "login") {
+      loginView.style.display = "flex";
+      dashboardView.style.display = "none";
+    } else {
+      loginView.style.display = "none";
+      dashboardView.style.display = "block";
+    }
+    console.log("After showView - login display:", loginView.style.display, "dashboard display:", dashboardView.style.display);
   }
 
   async function api(path, options = {}) {
@@ -86,7 +382,7 @@
 
   document.getElementById("login-form").addEventListener("submit", async (e) => {
     e.preventDefault();
-    clearError("login-error");
+    hideError("login-error");
     const studentId = document.getElementById("login-student-id").value;
     const pin = document.getElementById("login-pin").value;
     try {
@@ -95,62 +391,96 @@
         body: JSON.stringify({ student_id: Number(studentId), pin }),
       });
       token = result.access_token;
-      showView("question");
-      await loadPendingQuestion();
+      await loadDashboard();
+      showView("dashboard");
     } catch (err) {
       showError("login-error", err.message);
     }
   });
 
-  async function loadPendingQuestion() {
-    clearError("question-error");
-    document.getElementById("result-box").hidden = true;
-    document.getElementById("done-box").hidden = true;
-    document.getElementById("answer-input").value = "";
+  async function loadDashboard() {
+    hideError("question-error");
     try {
-      const pending = await api("/auth/student/assessments/pending");
-      if (pending.length === 0) {
-        document.getElementById("question-box").hidden = true;
-        document.getElementById("done-box").hidden = false;
-        return;
-      }
-      currentItemId = pending[0].id;
-      document.getElementById("question-text").textContent = pending[0].question_text;
-      document.getElementById("no-question").hidden = true;
-      document.getElementById("question-box").hidden = false;
+      studentData = await api("/auth/student/me");
+      const name = studentData.full_name;
+      const initials = name.split(" ").map(n => n[0]).join("").toUpperCase();
+
+      document.getElementById("student-name").textContent = name;
+      document.getElementById("student-grade").textContent = `Grade ${studentData.grade_level}`;
+      document.getElementById("profile-avatar").textContent = initials;
+
+      await loadPendingQuestion();
+      await loadHistory();
     } catch (err) {
       showError("question-error", err.message);
     }
   }
 
+  async function loadPendingQuestion() {
+    try {
+      const pending = await api("/auth/student/assessments/pending");
+      if (pending.length === 0) {
+        document.getElementById("question-box").classList.add("hidden");
+        document.getElementById("no-question-box").classList.remove("hidden");
+        document.getElementById("pending-section").classList.remove("hidden");
+        return;
+      }
+      document.getElementById("pending-section").classList.remove("hidden");
+      currentItemId = pending[0].id;
+      document.getElementById("question-text").textContent = pending[0].question_text;
+      document.getElementById("no-question-box").classList.add("hidden");
+      document.getElementById("question-box").classList.remove("hidden");
+      document.getElementById("result-box").classList.add("hidden");
+      document.getElementById("done-box").classList.add("hidden");
+    } catch (err) {
+      showError("question-error", err.message);
+    }
+  }
+
+  async function loadHistory() {
+    try {
+      const pending = await api("/auth/student/assessments/pending");
+      if (pending.length === 0) {
+        document.getElementById("history-section").classList.remove("hidden");
+      }
+    } catch (err) {
+      // Silent fail
+    }
+  }
+
   document.getElementById("answer-form").addEventListener("submit", async (e) => {
     e.preventDefault();
-    clearError("question-error");
+    hideError("question-error");
     const answerInput = document.getElementById("answer-input");
     try {
       const result = await api(`/assessments/${currentItemId}/answer`, {
         method: "POST",
         body: JSON.stringify({ answer: answerInput.value }),
       });
-      document.getElementById("question-box").hidden = true;
-      document.getElementById("result-score").textContent = `Score: ${result.score}`;
+      document.getElementById("question-box").classList.add("hidden");
+      document.getElementById("result-score").textContent = result.score + "/100";
       document.getElementById("result-feedback").textContent = result.feedback;
-      document.getElementById("result-box").hidden = false;
+      document.getElementById("result-box").classList.remove("hidden");
     } catch (err) {
       showError("question-error", err.message);
     }
   });
 
   document.getElementById("next-question-btn").addEventListener("click", () => {
+    document.getElementById("result-box").classList.add("hidden");
+    document.getElementById("answer-input").value = "";
     loadPendingQuestion();
   });
 
   document.getElementById("logout-btn").addEventListener("click", () => {
     token = null;
+    studentData = null;
     document.getElementById("login-student-id").value = "";
     document.getElementById("login-pin").value = "";
     showView("login");
   });
+
+  showView("login");
 </script>
 
 </body>
