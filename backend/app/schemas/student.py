@@ -17,3 +17,15 @@ class StudentOut(BaseModel):
 
 class StudentCreatedOut(StudentOut):
     pin: str
+
+
+class StudentProfileDimensionOut(BaseModel):
+    name: str
+    available: bool
+    latest_score: int | None = None
+    latest_feedback: str | None = None
+
+
+class StudentProfileOut(BaseModel):
+    summary: str
+    dimensions: list[StudentProfileDimensionOut]

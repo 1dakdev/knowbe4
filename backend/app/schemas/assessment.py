@@ -15,3 +15,12 @@ class AssessmentAnswerIn(BaseModel):
 class AssessmentGradedOut(BaseModel):
     score: int
     feedback: str
+
+
+class AssessFullClassIn(BaseModel):
+    subject: str
+    topic: str
+
+
+class AssessFullClassOut(BaseModel):
+    count: int

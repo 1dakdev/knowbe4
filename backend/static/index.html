@@ -634,6 +634,10 @@
     text-align: center;
     cursor: pointer;
     transition: all 0.3s ease;
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: #1a1a1a;
+    word-wrap: break-word;
   }
 
   .status-item:hover {
@@ -644,16 +648,19 @@
   .status-item.on-track {
     background: #ecfdf5;
     border: 2px solid #10b981;
+    color: #065f46;
   }
 
   .status-item.needs-attention {
     background: #fefce8;
     border: 2px solid #eab308;
+    color: #713f12;
   }
 
   .status-item.at-risk {
     background: #fef2f2;
     border: 2px solid #ef4444;
+    color: #7f1d1d;
   }
 
   .status-item-name {
@@ -680,6 +687,34 @@
     border-left: 4px solid #10b981;
     background: #f0fdf4;
     border-radius: 4px;
+  }
+
+  .guidance-group h3 {
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 0 0 8px;
+    font-size: 0.95rem;
+  }
+
+  .guidance-group p {
+    color: #666;
+    font-size: 0.9rem;
+    margin: 0;
+  }
+
+  .guidance-group.on-track-group {
+    border-left-color: #10b981;
+    background: #f0fdf4;
+  }
+
+  .guidance-group.needs-attention-group {
+    border-left-color: #eab308;
+    background: #fefce8;
+  }
+
+  .guidance-group.at-risk-group {
+    border-left-color: #ef4444;
+    background: #fef2f2;
   }
 
   .guidance-group-title {
@@ -1136,6 +1171,27 @@
       </div>
     </div>
 
+    <!-- Assess Full Class -->
+    <div class="dashboard-card">
+      <h2>📋 Assess Entire Class</h2>
+      <p class="card-subtitle">Select a subject, enter topic, and assess all students by grade</p>
+      <div class="assess-panel">
+        <select id="subject-dropdown" class="subject-dropdown">
+          <option value="">Select a subject...</option>
+          <option value="math">Mathematics</option>
+          <option value="english">English Language Arts</option>
+          <option value="science">Science</option>
+          <option value="social-studies">Social Studies</option>
+          <option value="art">Arts</option>
+          <option value="pe">Physical Education</option>
+          <option value="music">Music</option>
+          <option value="computer-science">Computer Science</option>
+        </select>
+        <input type="text" id="topic-input" class="subject-dropdown" placeholder="e.g., 'Algebra', 'Photosynthesis', 'World War II'" style="margin-top: 10px;" required />
+        <button type="button" id="assess-full-class-btn" class="btn-primary" style="width: 100%; margin-top: 12px;">Send Assessment to Class</button>
+      </div>
+    </div>
+
     <!-- Add Student -->
     <div class="dashboard-card">
       <h2>Add Student to Class</h2>
@@ -1281,55 +1337,114 @@
     try {
       const roster = await api(`/classes/${classId}`);
       document.getElementById("roster-title").textContent = roster.name;
-      const list = document.getElementById("roster-list");
-      list.innerHTML = "";
 
+      // 1. POPULATE STATUS GRID (clickable, color-coded)
+      const statusGrid = document.getElementById("student-status-grid");
+      statusGrid.innerHTML = "";
+      for (const student of roster.students) {
+        const item = document.createElement("li");
+        item.className = "status-item";
+        const score = student.latest_score || 0;
+        if (score >= 80) item.classList.add("on-track");
+        else if (score >= 70) item.classList.add("needs-attention");
+        else item.classList.add("at-risk");
+        item.textContent = student.full_name;
+        item.style.cursor = "pointer";
+        item.addEventListener("click", () => openProfile(classId, student.id, student.full_name));
+        statusGrid.appendChild(item);
+      }
+
+      // 2. GENERATE TEACHING GUIDANCE (grouped by performance level)
+      const guidance = document.getElementById("teaching-guidance");
+      guidance.innerHTML = "";
+      const onTrack = roster.students.filter(s => (s.latest_score || 0) >= 80);
+      const needsAttention = roster.students.filter(s => {
+        const score = s.latest_score || 0;
+        return score >= 70 && score < 80;
+      });
+      const atRisk = roster.students.filter(s => (s.latest_score || 0) < 70);
+
+      if (onTrack.length > 0) {
+        const group = document.createElement("div");
+        group.className = "guidance-group on-track-group";
+        group.innerHTML = `<h3>✓ On Track (${onTrack.length})</h3><p>These students are mastering the material. Consider extending with challenge problems or peer teaching roles.</p>`;
+        guidance.appendChild(group);
+      }
+      if (needsAttention.length > 0) {
+        const group = document.createElement("div");
+        group.className = "guidance-group needs-attention-group";
+        group.innerHTML = `<h3>⚠️ Needs Attention (${needsAttention.length})</h3><p>These students need reinforcement. Use concrete examples and provide additional practice before moving forward.</p>`;
+        guidance.appendChild(group);
+      }
+      if (atRisk.length > 0) {
+        const group = document.createElement("div");
+        group.className = "guidance-group at-risk-group";
+        group.innerHTML = `<h3>🔴 At Risk (${atRisk.length})</h3><p>These students need immediate intervention. Consider one-on-one support and review fundamentals with the group.</p>`;
+        guidance.appendChild(group);
+      }
+
+      // 3. POPULATE PROFILE LIST (clickable student names)
+      const profileList = document.getElementById("roster-list");
+      profileList.innerHTML = "";
       for (const student of roster.students) {
         const item = document.createElement("li");
         item.className = "roster-item";
-
-        // Left side with student name (clickable for profile)
+        item.style.cursor = "pointer";
         const leftDiv = document.createElement("div");
         leftDiv.className = "roster-item-left";
-        leftDiv.addEventListener("click", () => openProfile(classId, student.id, student.full_name));
-
         const nameSpan = document.createElement("span");
         nameSpan.textContent = student.full_name;
-        leftDiv.appendChild(nameSpan);
-
-        const gradeSpan = document.createElement("span");
-        gradeSpan.textContent = `Grade ${student.grade_level}`;
-        leftDiv.appendChild(gradeSpan);
-
-        item.appendChild(leftDiv);
-
         const scoreSpan = document.createElement("span");
+        scoreSpan.textContent = student.latest_score === null ? "No score yet" : `${student.latest_score}%`;
         scoreSpan.style.color = "var(--text-dim)";
         scoreSpan.style.fontSize = "0.85rem";
-        const scoreText = student.latest_score === null ? "No score yet" : `Score: ${student.latest_score}`;
-        scoreSpan.textContent = scoreText;
-        item.appendChild(scoreSpan);
-
-        const assessButton = document.createElement("button");
-        assessButton.textContent = "Assess";
-        assessButton.addEventListener("click", async () => {
-          assessButton.disabled = true;
-          assessButton.textContent = "Sending...";
-          try {
-            await api(`/classes/${currentClassId}/students/${student.id}/assessments`, { method: "POST" });
-            assessButton.textContent = "Question sent";
-          } catch (err) {
-            assessButton.textContent = "Assess";
-            assessButton.disabled = false;
-            showError("roster-error", err.message);
-          }
-        });
-        item.appendChild(assessButton);
-        list.appendChild(item);
+        leftDiv.appendChild(nameSpan);
+        leftDiv.appendChild(scoreSpan);
+        item.appendChild(leftDiv);
+        item.addEventListener("click", () => openProfile(classId, student.id, student.full_name));
+        profileList.appendChild(item);
       }
+
+      // Add search functionality
+      const searchBox = document.getElementById("profile-search");
+      searchBox.addEventListener("input", (e) => {
+        const query = e.target.value.toLowerCase();
+        for (const item of profileList.children) {
+          const name = item.querySelector("span").textContent.toLowerCase();
+          item.hidden = !name.includes(query);
+        }
+      });
+
+      // 4. POPULATE INTERVENTION LIST (students with score < 70)
+      const interventionList = document.getElementById("intervention-list");
+      interventionList.innerHTML = "";
+      const atRiskStudents = roster.students.filter(s => s.latest_score !== null && s.latest_score < 70);
+      if (atRiskStudents.length === 0) {
+        interventionList.innerHTML = "<li style='color: var(--text-dim); padding: 12px;'>No students need intervention</li>";
+      } else {
+        for (const student of atRiskStudents) {
+          const item = document.createElement("li");
+          item.className = "roster-item";
+          item.style.cursor = "pointer";
+          const leftDiv = document.createElement("div");
+          leftDiv.className = "roster-item-left";
+          const nameSpan = document.createElement("span");
+          nameSpan.textContent = student.full_name;
+          const scoreSpan = document.createElement("span");
+          scoreSpan.textContent = `${student.latest_score}%`;
+          scoreSpan.style.color = "#dc2626";
+          scoreSpan.style.fontWeight = "600";
+          leftDiv.appendChild(nameSpan);
+          leftDiv.appendChild(scoreSpan);
+          item.appendChild(leftDiv);
+          item.addEventListener("click", () => openProfile(classId, student.id, student.full_name));
+          interventionList.appendChild(item);
+        }
+      }
+
       showView("roster");
     } catch (err) {
-      showError("classes-error", err.message);
+      showError("roster-error", err.message);
     }
   }
 
@@ -1343,6 +1458,47 @@
     document.getElementById("login-email").value = "";
     document.getElementById("login-password").value = "";
     showView("login");
+  });
+
+  document.getElementById("teacher-logout-roster").addEventListener("click", () => {
+    token = null;
+    document.getElementById("login-email").value = "";
+    document.getElementById("login-password").value = "";
+    showView("login");
+  });
+
+  document.getElementById("assess-full-class-btn").addEventListener("click", async () => {
+    const subject = document.getElementById("subject-dropdown").value;
+    const topic = document.getElementById("topic-input").value.trim();
+    if (!subject) {
+      showError("roster-error", "Please select a subject");
+      return;
+    }
+    if (!topic) {
+      showError("roster-error", "Please enter a topic");
+      return;
+    }
+    const btn = document.getElementById("assess-full-class-btn");
+    btn.disabled = true;
+    const originalText = btn.textContent;
+    btn.textContent = "Sending assessments...";
+    try {
+      const result = await api(`/classes/${currentClassId}/assess`, {
+        method: "POST",
+        body: JSON.stringify({ subject, topic }),
+      });
+      btn.textContent = `✓ Sent to ${result.count} students`;
+      document.getElementById("subject-dropdown").value = "";
+      document.getElementById("topic-input").value = "";
+      setTimeout(() => {
+        btn.textContent = originalText;
+        btn.disabled = false;
+      }, 2000);
+    } catch (err) {
+      showError("roster-error", err.message);
+      btn.textContent = originalText;
+      btn.disabled = false;
+    }
   });
 
   document.getElementById("add-student-form").addEventListener("submit", async (e) => {

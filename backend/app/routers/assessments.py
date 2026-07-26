@@ -12,7 +12,13 @@ from app.models.school_class import SchoolClass
 from app.models.skill_dimension import SkillDimension
 from app.models.student import Student
 from app.models.teacher import Teacher
-from app.schemas.assessment import AssessmentAnswerIn, AssessmentGradedOut, AssessmentQuestionOut
+from app.schemas.assessment import (
+    AssessmentAnswerIn,
+    AssessmentGradedOut,
+    AssessmentQuestionOut,
+    AssessFullClassIn,
+    AssessFullClassOut,
+)
 
 router = APIRouter()
 
@@ -112,3 +118,50 @@ def list_pending_assessments(
         .filter(AssessmentItem.student_id == current_student.id, AssessmentItem.answered_at.is_(None))
         .all()
     )
+
+
+@router.post("/classes/{class_id}/assess", response_model=AssessFullClassOut)
+def assess_full_class(
+    class_id: int,
+    payload: AssessFullClassIn,
+    current_teacher: Teacher = Depends(get_current_teacher),
+    db: Session = Depends(get_db),
+):
+    subject = payload.subject
+    topic = payload.topic
+
+    school_class = db.get(SchoolClass, class_id)
+    if school_class is None or school_class.teacher_id != current_teacher.id:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Class not found")
+
+    students = db.query(Student).filter(Student.class_id == class_id).all()
+    if not students:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No students in class")
+
+    dimension = db.query(SkillDimension).filter(SkillDimension.key == _MATH_DIMENSION_KEY).first()
+    if dimension is None:
+        raise HTTPException(status_code=500, detail="math_reasoning skill dimension not seeded")
+
+    count = 0
+    for student in students:
+        try:
+            generated = gemini_client.generate_question(
+                dimension_key=dimension.key,
+                dimension_name=dimension.name,
+                rubric_description=dimension.rubric_description,
+                grade_level=student.grade_level,
+                topic=topic,
+            )
+            item = AssessmentItem(
+                student_id=student.id,
+                skill_dimension_id=dimension.id,
+                question_text=generated["question_text"],
+                correct_answer=generated["correct_answer"],
+            )
+            db.add(item)
+            count += 1
+        except GeminiError:
+            pass
+
+    db.commit()
+    return {"count": count}

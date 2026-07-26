@@ -6,12 +6,14 @@ from sqlalchemy.orm import Session
 from app.auth.dependencies import get_current_teacher
 from app.auth.security import hash_secret
 from app.database import get_db
-from app.models.assessment_item import latest_score_for_student
+from app.llm import gemini as gemini_client
+from app.models.assessment_item import AssessmentItem, latest_score_for_student
 from app.models.school_class import SchoolClass
+from app.models.skill_dimension import SkillDimension
 from app.models.student import Student
 from app.models.teacher import Teacher
 from app.schemas.school_class import ClassCreateIn, ClassOut, RosterOut
-from app.schemas.student import StudentCreateIn, StudentCreatedOut, StudentOut
+from app.schemas.student import StudentCreateIn, StudentCreatedOut, StudentOut, StudentProfileOut, StudentProfileDimensionOut
 
 router = APIRouter()
 
@@ -100,3 +102,68 @@ def add_student(
     return StudentCreatedOut(
         id=student.id, full_name=student.full_name, grade_level=student.grade_level, pin=pin
     )
+
+
+@router.get("/classes/{class_id}/students/{student_id}/profile", response_model=StudentProfileOut)
+def get_student_profile(
+    class_id: int,
+    student_id: int,
+    current_teacher: Teacher = Depends(get_current_teacher),
+    db: Session = Depends(get_db),
+):
+    school_class = _get_owned_class(class_id, current_teacher, db)
+    student = db.get(Student, student_id)
+    if student is None or student.class_id != school_class.id:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Student not found")
+
+    dimensions = db.query(SkillDimension).all()
+    dimension_results = []
+
+    for dimension in dimensions:
+        latest_assessment = (
+            db.query(AssessmentItem)
+            .filter(AssessmentItem.student_id == student_id, AssessmentItem.skill_dimension_id == dimension.id)
+            .order_by(AssessmentItem.created_at.desc())
+            .first()
+        )
+
+        if latest_assessment is None:
+            dimension_results.append({
+                "dimension_name": dimension.name,
+                "score": None,
+                "feedback": None,
+                "available": False,
+            })
+        elif latest_assessment.answered_at is None:
+            dimension_results.append({
+                "dimension_name": dimension.name,
+                "score": None,
+                "feedback": None,
+                "available": True,
+            })
+        else:
+            dimension_results.append({
+                "dimension_name": dimension.name,
+                "score": latest_assessment.score,
+                "feedback": latest_assessment.feedback,
+                "available": True,
+            })
+
+    summary = "No assessments yet. Student will receive personalized learning insights once assessments are completed."
+    if any(r["score"] is not None for r in dimension_results):
+        try:
+            summary = gemini_client.synthesize_profile_summary(dimension_results)
+        except Exception:
+            summary = "Assessment results available. Click 'Assess full profile' to generate personalized insights."
+
+    dimensions_out = [
+        StudentProfileDimensionOut(
+            name=r["dimension_name"],
+            available=r["available"],
+            latest_score=r["score"],
+            latest_feedback=r["feedback"],
+        )
+        for r in dimension_results
+    ]
+
+    return StudentProfileOut(summary=summary, dimensions=dimensions_out)

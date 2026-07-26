@@ -18,16 +18,17 @@ def _client() -> genai.Client:
 
 
 def generate_question(
-    dimension_key: str, dimension_name: str, rubric_description: str, grade_level: int
+    dimension_key: str, dimension_name: str, rubric_description: str, grade_level: int, topic: str = None
 ) -> dict:
     if dimension_key == "math_reasoning":
+        topic_note = f" The topic is: {topic}." if topic else ""
         prompt = (
             f"Generate one math word problem appropriate for a student in grade {grade_level} "
             "(grade 0 means kindergarten). The problem must have a single numeric correct answer. "
             "Keep it to 1-2 sentences. Scale difficulty to the grade: grades 0-2 use single-step "
             "addition/subtraction with numbers under 20; grades 3-5 use multi-digit arithmetic or "
             "simple multiplication/division; grades 6-8 use multi-step arithmetic or basic algebra; "
-            "grades 9-12 use algebra, geometry, or multi-step reasoning."
+            f"grades 9-12 use algebra, geometry, or multi-step reasoning.{topic_note}"
         )
         schema = {
             "type": "object",
@@ -38,12 +39,12 @@ def generate_question(
             "required": ["question_text", "correct_answer"],
         }
     else:
+        topic_note = f" Focus on this topic: {topic}." if topic else ""
         prompt = (
-            f"Generate one open-ended assessment question for the skill dimension "
-            f"'{dimension_name}' (rubric: {rubric_description}), appropriate for a student in "
-            f"grade {grade_level} (grade 0 means kindergarten). Keep it to 2-4 sentences, "
-            "including any scenario or short passage needed. The question should have no single "
-            "correct answer — it will be graded qualitatively against the rubric."
+            f"Generate one assessment question about {topic if topic else dimension_name} "
+            f"appropriate for a student in grade {grade_level} (grade 0 means kindergarten). "
+            "Keep it to 2-4 sentences, including any scenario or short passage needed. "
+            "The question should be graded based on understanding and critical thinking."
         )
         schema = {
             "type": "object",
