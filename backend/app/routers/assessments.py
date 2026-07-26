@@ -234,36 +234,36 @@ def assess_full_class(
     # Hardcoded test questions by subject
     test_questions = {
         "math": {
-            "question": f"Solve this {topic} problem: If you have 24 apples and divide them equally among 4 friends, how many does each friend get?",
-            "answer": "6"
+            "question": f"Solve this {topic} problem: If a store sells items at $12 each and you have $60, how many items can you buy?",
+            "answer": "5 items"
         },
         "science": {
-            "question": f"Explain the importance of {topic} in daily life and provide two examples.",
-            "answer": "Examples may vary but should include relevant applications"
+            "question": f"Explain the key concepts of {topic} and describe how it works in nature. Provide at least two specific examples.",
+            "answer": "Response should include scientific concepts and real-world applications"
         },
         "english": {
-            "question": f"Write a short paragraph about {topic} using at least 3 descriptive adjectives.",
-            "answer": "Student response should be descriptive and relevant"
+            "question": f"Read this passage about {topic} and summarize the main idea in 2-3 sentences, then explain your understanding.",
+            "answer": "Response should demonstrate reading comprehension and analytical thinking"
         },
         "social-studies": {
-            "question": f"Describe the historical significance of {topic} and its impact on society.",
-            "answer": "Response should show understanding of historical context"
+            "question": f"How has {topic} influenced society throughout history? Explain with at least two historical examples.",
+            "answer": "Response should demonstrate understanding of historical cause and effect"
         },
         "art": {
-            "question": f"Create or describe an artwork inspired by {topic}. What materials would you use?",
-            "answer": "Creative response with reasoning"
+            "question": f"Describe how an artist might incorporate elements of {topic} into a visual artwork. What techniques would you use?",
+            "answer": "Response should show creative thinking and understanding of artistic techniques"
         },
         "pe": {
-            "question": f"Explain how {topic} contributes to physical fitness and list 3 benefits.",
-            "answer": "Should demonstrate understanding of fitness concepts"
+            "question": f"Explain the importance of {topic} in maintaining physical health and wellness. List three specific benefits.",
+            "answer": "Response should demonstrate knowledge of health and fitness principles"
         },
         "music": {
-            "question": f"Identify musical elements in {topic} and explain their purpose.",
-            "answer": "Should show understanding of musical theory"
+            "question": f"Analyze how {topic} is used in a musical composition. What mood or feeling does it create?",
+            "answer": "Response should show understanding of musical elements and their effects"
         },
         "computer-science": {
-            "question": f"Describe how {topic} is used in computer programming. Provide an example.",
-            "answer": "Response should demonstrate technical understanding"
+            "question": f"Explain how {topic} works in computer programming. Provide a practical example of when it would be used.",
+            "answer": "Response should demonstrate technical understanding and practical application"
         },
     }
 
