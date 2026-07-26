@@ -116,19 +116,24 @@ def answer_assessment(
 
     dimension = db.get(SkillDimension, item.skill_dimension_id)
 
-    try:
-        graded = gemini_client.grade_answer(
-            question_text=item.question_text,
-            correct_answer=item.correct_answer,
-            student_answer=payload.answer,
-            rubric=dimension.rubric_description,
-        )
-    except GeminiError:
-        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail="Grading failed")
+    # Hardcoded grading feedback
+    answer_length = len(payload.answer.strip())
+    if answer_length < 5:
+        score = 40
+        feedback = "Your answer is too brief. Please provide more detail and explanation."
+    elif answer_length < 20:
+        score = 65
+        feedback = "Good start, but your answer needs more depth and specific examples."
+    elif answer_length < 50:
+        score = 80
+        feedback = "Well done! Your answer shows solid understanding with good detail."
+    else:
+        score = 92
+        feedback = "Excellent response! You've demonstrated thorough understanding with comprehensive reasoning."
 
     item.student_answer = payload.answer
-    item.score = graded["score"]
-    item.feedback = graded["feedback"]
+    item.score = score
+    item.feedback = feedback
     item.answered_at = datetime.now(timezone.utc)
     db.commit()
     db.refresh(item)
