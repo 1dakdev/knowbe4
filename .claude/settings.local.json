@@ -10,7 +10,8 @@
       "Bash(curl -s http://localhost:8000/health)",
       "Bash(git commit *)",
       "Bash(git commit -m 'fix: move parental consent to enrollment, remove from teacher dashboard *)",
-      "Bash(git push *)"
+      "Bash(git push *)",
+      "Bash(curl -s http://127.0.0.1:8000/health)"
     ]
   }
 }

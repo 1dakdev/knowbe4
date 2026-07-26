@@ -1548,6 +1548,35 @@
     <ul id="profile-dimensions"></ul>
   </div>
 
+  <div id="recommendations-wrapper" hidden>
+    <div style="margin-top: 40px; padding-top: 40px; border-top: 2px solid #e5e7eb;">
+      <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 24px;">
+        <h2 style="margin: 0; font-size: 1.3rem; font-weight: 700; color: #1a1a1a;">Teaching Recommendations</h2>
+        <span id="perf-badge" style="display: inline-block; padding: 6px 14px; border-radius: 20px; font-weight: 700; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; background: #ecfdf5; color: #10b981;"></span>
+      </div>
+
+      <div id="rec-strengths" style="background: #ecfdf5; border-left: 4px solid #10b981; padding: 20px; margin-bottom: 16px; border-radius: 8px;">
+        <h3 style="margin: 0 0 12px; color: #10b981; font-weight: 700;">Strengths</h3>
+        <ul id="rec-strengths-list" style="list-style: none; padding: 0; margin: 0; color: #166534;"></ul>
+      </div>
+
+      <div id="rec-growth" style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 20px; margin-bottom: 16px; border-radius: 8px;">
+        <h3 style="margin: 0 0 12px; color: #d97706; font-weight: 700;">Areas for Growth</h3>
+        <ul id="rec-growth-list" style="list-style: none; padding: 0; margin: 0; color: #92400e;"></ul>
+      </div>
+
+      <div id="rec-strategies" style="background: #e0e7ff; border-left: 4px solid #6366f1; padding: 20px; margin-bottom: 16px; border-radius: 8px;">
+        <h3 style="margin: 0 0 12px; color: #4f46e5; font-weight: 700;">Teaching Strategies</h3>
+        <ul id="rec-strategies-list" style="list-style: none; padding: 0; margin: 0; color: #3730a3;"></ul>
+      </div>
+
+      <div id="rec-activities" style="background: #f3e8ff; border-left: 4px solid #a855f7; padding: 20px; border-radius: 8px;">
+        <h3 style="margin: 0 0 12px; color: #a855f7; font-weight: 700;">Recommended Activities</h3>
+        <ul id="rec-activities-list" style="list-style: none; padding: 0; margin: 0; color: #6b21a8;"></ul>
+      </div>
+    </div>
+  </div>
+
   <div id="teaching-recommendations" hidden>
     <h3>AI Teaching Recommendations</h3>
     <div id="recommendation-loading">Loading recommendations...</div>
@@ -2217,6 +2246,61 @@
           `;
         }
         list.appendChild(li);
+      }
+
+      // Load personalized recommendations
+      try {
+        const recommendations = await api(`/classes/${classId}/students/${studentId}/recommendations`);
+        const recWrapper = document.getElementById("recommendations-wrapper");
+
+        // Set performance badge
+        const badge = document.getElementById("perf-badge");
+        badge.textContent = recommendations.performance_level;
+
+        // Set strengths
+        const strengthsList = document.getElementById("rec-strengths-list");
+        strengthsList.innerHTML = "";
+        for (const strength of recommendations.strengths) {
+          const li = document.createElement("li");
+          li.style.padding = "6px 0; padding-left: 24px; position: relative;";
+          li.innerHTML = strength;
+          const before = document.createElement("span");
+          strengthsList.appendChild(li);
+        }
+
+        // Set areas for growth
+        const growthList = document.getElementById("rec-growth-list");
+        growthList.innerHTML = "";
+        for (const area of recommendations.areas_for_growth) {
+          const li = document.createElement("li");
+          li.style.padding = "6px 0; padding-left: 24px; position: relative;";
+          li.textContent = area;
+          growthList.appendChild(li);
+        }
+
+        // Set strategies
+        const strategiesList = document.getElementById("rec-strategies-list");
+        strategiesList.innerHTML = "";
+        for (const strategy of recommendations.teaching_strategies) {
+          const li = document.createElement("li");
+          li.style.padding = "6px 0; padding-left: 24px; position: relative;";
+          li.textContent = strategy;
+          strategiesList.appendChild(li);
+        }
+
+        // Set activities
+        const activitiesList = document.getElementById("rec-activities-list");
+        activitiesList.innerHTML = "";
+        for (const activity of recommendations.recommended_activities) {
+          const li = document.createElement("li");
+          li.style.padding = "6px 0; padding-left: 24px; position: relative;";
+          li.textContent = activity;
+          activitiesList.appendChild(li);
+        }
+
+        recWrapper.hidden = false;
+      } catch (err) {
+        // Recommendations failed silently
       }
 
       await loadTeachingRecommendations(classId, studentId);
