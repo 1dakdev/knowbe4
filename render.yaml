@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: knowbe4
+    runtime: python
+    runtimeVersion: "3.10"
+    buildCommand: "cd backend && pip install -r requirements.txt"
+    startCommand: "cd backend && uvicorn app.main:app --host 0.0.0.0 --port 8000"
+    envVars:
+      - key: GEMINI_API_KEY
+        sync: false
+    staticPublicPath: backend/static
+    healthCheckPath: /docs
