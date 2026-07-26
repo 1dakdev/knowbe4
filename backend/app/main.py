@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 
 from app.database import Base, engine
@@ -34,6 +34,11 @@ app.include_router(teacher_auth.router)
 app.include_router(classes.router)
 app.include_router(student_auth.router)
 app.include_router(assessments.router)
+
+
+@app.get("/")
+async def root():
+    return RedirectResponse(url="/ui/", status_code=302)
 
 
 @app.get("/student")
